@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webserver.ztp.yndd.io
+  namespace: ndd-system
+spec:
+  selector:
+    service.yndd: ztp.webserver
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 800
+
+----
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: dhcp-ztp-yndd
+  namespace: ndd-system
+spec:
+  selector:
+    service.yndd: ztp.dhcp
+  ports:
+    - protocol: UDP
+      port: 67 
+      targetPort: 670
