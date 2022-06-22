@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ztp-webserver
+  labels:
+    service.yndd: ztp.webserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service.yndd: ztp.webserver
+  template:
+    metadata:
+      labels:
+        service.yndd: ztp.webserver
+    spec:
+      serviceAccountName: ztp-webserver
+      volumes:
+      - name: ztp-webserver-storage
+        persistentVolumeClaim:
+          claimName: ztp-webserver-claim
+      containers:
+      - name: ztp-webserver
+        image: ghcr.io/steiler/ztp-webserver:latest
+        args: ["run","--port","8000"]
+        ports:
+          - containerPort: 8000
+        volumeMounts:
+          - mountPath: "/webserver"
+            name: ztp-webserver-storage
+      imagePullSecrets:
+      - name: regcred
+
+----
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ztp-webserver-yndd
+  namespace: ndd-system
+spec:
+  selector:
+    service.yndd: ztp.webserver
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: LoadBalancer
+
+----
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ztp-webserver
+  namespace: ndd-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: ztp-webserver
+rules:
+- apiGroups: ["topo.yndd.io"]
+  #
+  # at the HTTP level, the name of the resource for accessing Secret
+  # objects is "secrets"
+  resources: ["nodes"]
+  verbs: ["get", "watch", "list"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+# This role binding allows "jane" to read pods in the "default" namespace.
+# You need to already have a Role named "pod-reader" in that namespace.
+kind: ClusterRoleBinding
+metadata:
+  name: ztp-webserver
+subjects:
+# You can specify more than one "subject"
+- kind: ServiceAccount
+  name: ztp-webserver # "name" is case sensitive
+  namespace: ndd-system
+roleRef:
+  # "roleRef" specifies the binding to a Role / ClusterRole
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: ztp-webserver # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+
+----
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ztp-webserver-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+
+----
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ztp-webserver-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+
+----
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ztp-webserver-yndd
+  namespace: ndd-system
+spec:
+  selector:
+    service.yndd: ztp.webserver
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: LoadBalancer

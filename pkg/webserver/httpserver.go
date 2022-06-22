@@ -6,41 +6,64 @@ import (
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/yndd/ztp-webserver/pkg/storage"
+	storageIf "github.com/yndd/ztp-webserver/pkg/storage/interfaces"
 	"github.com/yndd/ztp-webserver/pkg/structs"
+	webserverIf "github.com/yndd/ztp-webserver/pkg/webserver/interfaces"
 )
 
 var webserver *WebserverImpl
 
 type WebserverImpl struct {
-	mux *http.ServeMux
+	mux     *http.ServeMux
+	storage storageIf.Storage
+	index   storageIf.Index
 }
 
-type WebserverOperations interface {
-	Run(ip string, port int)
-}
-
-type WebserverSetup interface {
-	AddHandler(up *structs.UrlParams, handler func(http.ResponseWriter, *http.Request))
-}
-
-func (ws *WebserverImpl) Run(ip string, port int) {
-	log.Infof("starting webserver on %s:%d", ip, port)
-	http.ListenAndServe(ip+":"+strconv.Itoa(port), ws.mux)
+func (ws *WebserverImpl) Run(port int, storageFolder string) {
+	log.Infof("starting webserver on port %d", port)
+	ws.index.LoadBackend(storageFolder)
+	ws.storage.LoadBackend(storageFolder)
+	ws.mux.Handle("/storage", http.StripPrefix("/storage", http.FileServer(http.Dir(storageFolder))))
+	http.ListenAndServe("0.0.0.0:"+strconv.Itoa(port), ws.mux)
 }
 
 func (ws *WebserverImpl) AddHandler(up *structs.UrlParams, handler func(http.ResponseWriter, *http.Request)) {
 	pattern := up.GetUrlRelative()
-	log.Infof("handler added for pattern %s", pattern)
-	ws.mux.HandleFunc(pattern, handler)
+	path := "/" + pattern.Path
+	log.Infof("handler added for pattern %s", path)
+	ws.mux.HandleFunc(path, handler)
+}
+
+func (ws *WebserverImpl) GetStorage() storageIf.Storage {
+	return ws.storage
+}
+
+func (ws *WebserverImpl) GetIndex() storageIf.Index {
+	return ws.index
+}
+
+func (ws *WebserverImpl) ResponseFromIndex(rw http.ResponseWriter, r *http.Request) {
+	log.Debugf("handling call on %s", r.URL)
+
+	relativeFileToBeDelivered, err := ws.index.DeduceRelativeFilePath(r.URL)
+	if err != nil {
+		status := http.StatusBadRequest
+		rw.WriteHeader(status)
+		rw.Write([]byte(fmt.Sprintf("%d - %v", status, err)))
+		return
+	}
+
+	ws.storage.Handle(rw, relativeFileToBeDelivered)
 }
 
 // GetWebserverOperations return the webserver operations interface
-func GetWebserverOperations() WebserverOperations {
+func GetWebserverOperations() webserverIf.WebserverOperations {
 	return newWebserver()
 }
 
 // GetWebserverSetup return the webserver setup interface
-func GetWebserverSetup() WebserverSetup {
+func GetWebserverSetup() webserverIf.WebserverSetup {
 	return newWebserver()
 }
 
@@ -48,18 +71,10 @@ func GetWebserverSetup() WebserverSetup {
 func newWebserver() *WebserverImpl {
 	if webserver == nil {
 		webserver = &WebserverImpl{
-			mux: http.NewServeMux(),
+			mux:     http.NewServeMux(),
+			storage: storage.NewFolderStorage(),
+			index:   storage.NewIndex(),
 		}
 	}
 	return webserver
-}
-
-// HandleErrorCode Generates error page
-func HandleErrorCode(errorCode int, description string, w http.ResponseWriter) {
-	w.WriteHeader(errorCode)                    // set HTTP status code (example 404, 500)
-	w.Header().Set("Content-Type", "text/html") // clarify return type (MIME)
-	w.Write([]byte(fmt.Sprintf(
-		"<html><body><h1>Error %d</h1><p>%s</p></body></html>",
-		errorCode,
-		description)))
 }
