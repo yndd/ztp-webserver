@@ -65,6 +65,16 @@ func NewUrlParams(vendor, model string, ct ContentTypes) *UrlParams {
 	}
 }
 
+// NewUrlParams generate a UrlParams struct without the version parameter
+func NewUrlParamsDeviceId(vendor, model string, deviceId string, ct ContentTypes) *UrlParams {
+	return &UrlParams{
+		vendor:      vendor,
+		model:       model,
+		contentType: ct,
+		deviceId:    deviceId,
+	}
+}
+
 func UrlParamsFromUrl(u *url.URL) (*UrlParams, error) {
 	var result *UrlParams = nil
 
