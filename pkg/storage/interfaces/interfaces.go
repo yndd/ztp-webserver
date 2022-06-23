@@ -3,6 +3,8 @@ package interfaces
 import (
 	"net/http"
 	"net/url"
+
+	"github.com/yndd/ztp-webserver/pkg/structs"
 )
 
 type Storage interface {
@@ -11,6 +13,6 @@ type Storage interface {
 }
 
 type Index interface {
-	DeduceRelativeFilePath(urlPath *url.URL) (string, error)
+	DeduceRelativeFilePath(*url.URL, structs.ContentTypes) (string, error)
 	LoadBackend(base string) error
 }

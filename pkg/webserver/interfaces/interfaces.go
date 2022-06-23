@@ -12,8 +12,8 @@ type WebserverOperations interface {
 }
 
 type WebserverSetup interface {
-	AddHandler(up *structs.UrlParams, handler func(http.ResponseWriter, *http.Request))
+	AddHandler(*structs.UrlParams, func(http.ResponseWriter, *http.Request))
 	GetStorage() storageif.Storage
 	GetIndex() storageif.Index
-	ResponseFromIndex(rw http.ResponseWriter, r *http.Request)
+	ResponseFromIndex(http.ResponseWriter, *http.Request, structs.ContentTypes)
 }

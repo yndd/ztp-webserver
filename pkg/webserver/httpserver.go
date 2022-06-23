@@ -21,10 +21,17 @@ type WebserverImpl struct {
 }
 
 func (ws *WebserverImpl) Run(port int, storageFolder string) {
+
+	err := ws.index.LoadBackend(storageFolder)
+	if err != nil {
+		log.Fatalf("error loading index backend: %v", err)
+	}
+	err = ws.storage.LoadBackend(storageFolder)
+	if err != nil {
+		log.Fatalf("error loading storage backend: %v", err)
+	}
+	//ws.mux.Handle("/storage", http.StripPrefix("/storage", http.FileServer(http.Dir(storageFolder))))
 	log.Infof("starting webserver on port %d", port)
-	ws.index.LoadBackend(storageFolder)
-	ws.storage.LoadBackend(storageFolder)
-	ws.mux.Handle("/storage", http.StripPrefix("/storage", http.FileServer(http.Dir(storageFolder))))
 	http.ListenAndServe("0.0.0.0:"+strconv.Itoa(port), ws.mux)
 }
 
@@ -43,11 +50,10 @@ func (ws *WebserverImpl) GetIndex() storageIf.Index {
 	return ws.index
 }
 
-func (ws *WebserverImpl) ResponseFromIndex(rw http.ResponseWriter, r *http.Request) {
-	log.Debugf("handling call on %s", r.URL)
-
-	relativeFileToBeDelivered, err := ws.index.DeduceRelativeFilePath(r.URL)
+func (ws *WebserverImpl) ResponseFromIndex(rw http.ResponseWriter, r *http.Request, ct structs.ContentTypes) {
+	relativeFileToBeDelivered, err := ws.index.DeduceRelativeFilePath(r.URL, ct)
 	if err != nil {
+		log.Errorf("error deducing relative file path: %v", err)
 		status := http.StatusBadRequest
 		rw.WriteHeader(status)
 		rw.Write([]byte(fmt.Sprintf("%d - %v", status, err)))

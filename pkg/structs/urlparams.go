@@ -91,7 +91,6 @@ func UrlParamsFromUrl(u *url.URL) (*UrlParams, error) {
 	if val, exists := u.Query()["deviceid"]; exists {
 		result.deviceId = val[0]
 	}
-
 	return result, err
 }
 

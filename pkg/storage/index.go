@@ -23,10 +23,11 @@ type PlattformEntry struct {
 }
 
 type VersionEntry struct {
-	File string `json:"file"`
+	File        string `json:"file"`
+	Md5HashFile string `json:"md5HashFile,omitempty"`
 }
 
-func (i *Index) DeduceRelativeFilePath(urlPath *url.URL) (string, error) {
+func (i *Index) DeduceRelativeFilePath(urlPath *url.URL, ct structs.ContentTypes) (string, error) {
 	purl, err := structs.UrlParamsFromUrl(urlPath)
 	if err != nil {
 		return "", fmt.Errorf("error parsing url %s - %v", urlPath, err)
@@ -34,7 +35,7 @@ func (i *Index) DeduceRelativeFilePath(urlPath *url.URL) (string, error) {
 
 	vendor := i.GetVendor(purl.GetVendor())
 	if vendor == nil {
-		return "", fmt.Errorf("vendor '%s' not foudn in index", purl.GetVendor())
+		return "", fmt.Errorf("vendor '%s' not found in index", purl.GetVendor())
 	}
 	plattform := vendor.GetPlattform(purl.GetModel())
 	if plattform == nil {
@@ -44,7 +45,15 @@ func (i *Index) DeduceRelativeFilePath(urlPath *url.URL) (string, error) {
 	if version == nil {
 		return "", fmt.Errorf("version '%s' not found under vendor '%s', plattform '%s' in index", purl.GetVersion(), purl.GetModel(), purl.GetVendor())
 	}
-	return version.File, nil
+
+	switch ct {
+	case structs.Software:
+		return version.File, nil
+	case structs.Md5HashFile:
+		return version.Md5HashFile, nil
+	}
+
+	return "", fmt.Errorf("content not found in index")
 }
 
 func (i *Index) AddVendor(vendor string) *VendorEntry {
@@ -109,6 +118,15 @@ func (ve *VersionEntry) SetFile(file string) error {
 		return fmt.Errorf("file %s is already referenced ignoring %s", ve.File, file)
 	}
 	ve.File = file
+
+	return nil
+}
+
+func (ve *VersionEntry) SetMd5HashFile(file string) error {
+	if ve.Md5HashFile != "" {
+		return fmt.Errorf("md5 hash file %s is already referenced ignoring %s", ve.Md5HashFile, file)
+	}
+	ve.Md5HashFile = file
 
 	return nil
 }

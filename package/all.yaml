@@ -28,16 +28,23 @@ spec:
         volumeMounts:
           - mountPath: "/webserver"
             name: ztp-webserver-storage
+        env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
       imagePullSecrets:
       - name: regcred
 
-----
+---
 
 apiVersion: v1
 kind: Service
 metadata:
   name: ztp-webserver-yndd
   namespace: ndd-system
+  labels:
+    ztp.webserver.protocol: http
 spec:
   selector:
     service.yndd: ztp.webserver
@@ -47,7 +54,7 @@ spec:
       targetPort: 8000
   type: LoadBalancer
 
-----
+---
 
 apiVersion: v1
 kind: ServiceAccount
@@ -89,7 +96,7 @@ roleRef:
   name: ztp-webserver # this must match the name of the Role or ClusterRole you wish to bind to
   apiGroup: rbac.authorization.k8s.io
 
-----
+---
 
 apiVersion: v1
 kind: PersistentVolume
@@ -106,7 +113,7 @@ spec:
   hostPath:
     path: "/mnt/data"
 
-----
+---
 
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -120,7 +127,7 @@ spec:
     requests:
       storage: 3Gi
 
-----
+---
 
 apiVersion: v1
 kind: Service
