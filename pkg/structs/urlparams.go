@@ -12,13 +12,13 @@ type UrlParams struct {
 	contentType ContentTypes
 	// version will not be present in calls for config or scripts
 	// but is necessary for software downloads
-	version  string
-	deviceId string
+	version    string
+	devicename string
 }
 
 // Equals check value equality of two UrlParam structs
 func (u *UrlParams) Equals(x *UrlParams) bool {
-	return u.deviceId == x.deviceId &&
+	return u.devicename == x.devicename &&
 		u.vendor == x.vendor &&
 		u.model == x.model &&
 		u.version == x.version &&
@@ -26,7 +26,7 @@ func (u *UrlParams) Equals(x *UrlParams) bool {
 }
 
 func (u *UrlParams) SetDeviceId(s string) *UrlParams {
-	u.deviceId = s
+	u.devicename = s
 	return u
 }
 
@@ -48,8 +48,8 @@ func (u *UrlParams) GetUrlRelative() *url.URL {
 		q.Set("version", u.version)
 	}
 	// add version parameter if set
-	if u.deviceId != "" {
-		q.Set("deviceid", u.deviceId)
+	if u.devicename != "" {
+		q.Set("deviceid", u.devicename)
 	}
 	newUrl.RawQuery = q.Encode()
 
@@ -66,12 +66,12 @@ func NewUrlParams(vendor, model string, ct ContentTypes) *UrlParams {
 }
 
 // NewUrlParams generate a UrlParams struct without the version parameter
-func NewUrlParamsDeviceId(vendor, model string, deviceId string, ct ContentTypes) *UrlParams {
+func NewUrlParamsDeviceName(vendor, model string, deviceId string, ct ContentTypes) *UrlParams {
 	return &UrlParams{
 		vendor:      vendor,
 		model:       model,
 		contentType: ct,
-		deviceId:    deviceId,
+		devicename:  deviceId,
 	}
 }
 
@@ -99,7 +99,7 @@ func UrlParamsFromUrl(u *url.URL) (*UrlParams, error) {
 	}
 	// parse device ID
 	if val, exists := u.Query()["deviceid"]; exists {
-		result.deviceId = val[0]
+		result.devicename = val[0]
 	}
 	return result, err
 }
@@ -136,7 +136,7 @@ func (u *UrlParams) GetVersion() string {
 	return u.version
 }
 
-// GetDeviceId getter for the deviceId attribute
-func (u *UrlParams) GetDeviceId() string {
-	return u.deviceId
+// GetDeviceName getter for the deviceId attribute
+func (u *UrlParams) GetDeviceName() string {
+	return u.devicename
 }

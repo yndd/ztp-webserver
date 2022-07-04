@@ -2,13 +2,16 @@ package interfaces
 
 import (
 	"net/http"
+	"net/url"
 
+	dhcpstructs "github.com/yndd/ztp-dhcp/pkg/structs"
 	storageif "github.com/yndd/ztp-webserver/pkg/storage/interfaces"
 	"github.com/yndd/ztp-webserver/pkg/structs"
 )
 
 type WebserverOperations interface {
 	Run(port int, storageFolder string)
+	SetKubeConfig(string)
 }
 
 type WebserverSetup interface {
@@ -16,4 +19,6 @@ type WebserverSetup interface {
 	GetStorage() storageif.Storage
 	GetIndex() storageif.Index
 	ResponseFromIndex(http.ResponseWriter, *http.Request, structs.ContentTypes)
+	EnrichUrl(*url.URL) error
+	GetDeviceInformationByName(deviceId string) (*dhcpstructs.DeviceInformation, error)
 }

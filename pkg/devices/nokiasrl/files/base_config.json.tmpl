@@ -1,0 +1,113 @@
+{
+  "srl_nokia-interfaces:interface": [
+    {
+      "name": "mgmt0",
+      "admin-state": "enable",
+      "subinterface": [
+        {
+          "index": 0,
+          "admin-state": "enable",
+          "ipv4": {
+            "address": [
+              {
+                "ip-prefix": "{{.Cidr}}"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "srl_nokia-system:system": {
+    "srl_nokia-gnmi-server:gnmi-server": {
+      "admin-state": "enable",
+      "network-instance": [
+        {
+          "name": "mgmt",
+          "admin-state": "enable",
+          "use-authentication": true,
+          "port": 57400,
+          "tls-profile": "tls-profile-1"
+        }
+      ]
+    },
+    "srl_nokia-tls:tls": {
+      "server-profile": [
+        {
+          "name": "tls-profile-1",
+          "key": "$aes$bLEsze1NwbPw=$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",
+          "certificate": "-----BEGIN CERTIFICATE-----\nMIID/jCCAuagAwIBAgIUazBo8B6WStGAng0M1Dg2UL6nvXUwDQYJKoZIhvcNAQEL\nBQAwXzELMAkGA1UEBhMCQkUxEDAOBgNVBAcTB0FudHdlcnAxDjAMBgNVBAoTBU5v\na2lhMRYwFAYDVQQLEw1Db250YWluZXIgbGFiMRYwFAYDVQQDEw1zcmwwMiBSb290\nIENBMB4XDTIwMTIwMTIwMDYwMFoXDTIxMTIwMTIwMDYwMFowXzELMAkGA1UEBhMC\nQkUxEDAOBgNVBAcTB0FudHdlcnAxDjAMBgNVBAoTBU5va2lhMRYwFAYDVQQLEw1D\nb250YWluZXIgbGFiMRYwFAYDVQQDEw1zcmwyLnNybDAyLmlvMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxP4V14LLTpytEZUxYM+T21c3fo57Pu8gVElL\n2aEPHm9ya+5LQRQ1TP9UvjmY9HeTVde8rIEpwNAABUQc4pWNcklK8amz3BW9egtg\nTGbyx/Y4vbCRkuKIcQtREkhEYLun73E/2Q7ZFuzZQ5Zpxvfxt0ye+BJlxIin3bNK\nVitnpuqQdbK2/8/F/tN0oC6eEJr9p5jaXspzKOdwqI/nMC8CfNAkQ6N6/6hp6Aal\n3K2GAeVQqf+QZMd++Qx0JZNtajTQ53YYTEXRoRSWznQzmSb4o+TiZ7X2oWnO8Rl8\nfWp95vf1GcYJbmH25gm4eAREoidYCgReL5X04VMKt+3tTuf1rQIDAQABo4GxMIGu\nMA4GA1UdDwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIw\nDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQUHNanRdJb1OB1S8yaFP9Zv9bqpsswHwYD\nVR0jBBgwFoAU/UNXlN/3/ij9bWwTiqAP3Gh4mmowLwYDVR0RBCgwJoIEc3JsMoIP\nY2xhYi1zcmwwMi1zcmwygg1zcmwyLnNybDAyLmlvMA0GCSqGSIb3DQEBCwUAA4IB\nAQAzRziFw9hT83HudL7qa10FUdh2stgSPdVO9PlIHKY0rAJOW5ywGaYLi4/ADL4Z\nA853QY/KkqqF4Ov9rEi2+UsnlGINUQ8VbNsnBH+sF53nJFalMlq1/2LBmG1c2GsD\nZ2/YqbQTIMKlCkVjGI2rNWjFpVAvhZhJuwmvzA4iGUmXaaS0sv6i4N/9U7JOY6Ef\nJcKTPts+DHeyYKvD5lho/t6HZpnt/WzzMy7E9TcevOs1yOPhiNjnEp18DW4jrZhd\nQseBSTwx/bwm1z5KycJGYVdalKCDyHvzQyesd4lSq2tOWm4nzi+GLzm+wZa2bxDB\nVhdEh61VwMDNoBx4aszjn7gN\n-----END CERTIFICATE-----\n",
+          "authenticate-client": false
+        }
+      ]
+    },
+    "ssh-server": {
+      "network-instance": [
+        {
+          "name": "mgmt",
+          "admin-state": "enable"
+        }
+      ]
+    },
+    "dns": {
+      "network-instance": "mgmt",
+      "server-list": [
+        {{ $x := jsonstringify .DnsServers}}{{ join $x ",\n" }}
+      ]
+    },
+    "ntp": {
+      "admin-state": "enable",
+      "network-instance": "mgmt",
+      "server": [{{range $index, $value := .NtpServers}}{{if $index}},{{end}}
+        {
+          "address": "{{ $value }}"
+        }{{end}}
+      ]
+    },
+    "srl_nokia-lldp:lldp": {
+      "admin-state": "enable"
+    }
+  },
+  "network-instance": [
+    {
+      "name": "mgmt",
+      "type": "ip-vrf",
+      "admin-state": "enable",
+      "description": "Management network instance",
+      "interface": [
+        {
+          "name": "mgmt0.0"
+        }
+      ],
+      "protocols": {
+        "linux": {
+          "import-routes": true,
+          "export-routes": true,
+          "export-neighbors": true
+        }
+      },
+      "static-routes": {
+        "route": [
+          {
+            "prefix": "0.0.0.0/0",
+            "next-hop-group": "mgmt-net-router"
+          }
+        ]
+      },
+      "next-hop-groups": {
+        "group": [
+          {
+            "name": "mgmt-net-router",
+            "nexthop": [
+              {
+                "index": 1,
+                "ip-address": "{{.GatewayIp}}",
+                "admin-state": "enable"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

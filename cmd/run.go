@@ -13,6 +13,7 @@ import (
 var (
 	port          int
 	storageFolder string
+	kubeconfig    string
 )
 
 // runCmd represents the run command
@@ -22,6 +23,7 @@ var runCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws := webserver.GetWebserverOperations()
+		ws.SetKubeConfig(kubeconfig)
 		ws.Run(port, storageFolder)
 	},
 }
@@ -38,4 +40,5 @@ func init() {
 	runCmd.Flags().IntVar(&port, "port", 8000, "The port to bind the webserver to")
 	//runCmd.Flags().IntVar(&dhcpv6_port, "dhcpv6-port", 567, "The port to bind the dhcpv6 server to.")
 	runCmd.Flags().StringVar(&storageFolder, "storagefolder", "/webserver", "Folder that contains content for the webserver to deliver")
+	runCmd.Flags().StringVar(&kubeconfig, "kubeconfig", "", "Pointer to the kubeconfig file")
 }

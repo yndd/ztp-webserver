@@ -3,9 +3,13 @@ package webserver
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/yndd/ztp-dhcp/pkg/backend"
+	"github.com/yndd/ztp-dhcp/pkg/backend/k8s"
+	dhcpstructs "github.com/yndd/ztp-dhcp/pkg/structs"
 	"github.com/yndd/ztp-webserver/pkg/storage"
 	storageIf "github.com/yndd/ztp-webserver/pkg/storage/interfaces"
 	"github.com/yndd/ztp-webserver/pkg/structs"
@@ -15,9 +19,10 @@ import (
 var webserver *WebserverImpl
 
 type WebserverImpl struct {
-	mux     *http.ServeMux
-	storage storageIf.Storage
-	index   storageIf.Index
+	mux        *http.ServeMux
+	storage    storageIf.Storage
+	index      storageIf.Index
+	k8sBackend backend.ZtpBackend
 }
 
 func (ws *WebserverImpl) Run(port int, storageFolder string) {
@@ -50,6 +55,16 @@ func (ws *WebserverImpl) GetIndex() storageIf.Index {
 	return ws.index
 }
 
+func (ws *WebserverImpl) EnrichUrl(theUrl *url.URL) error {
+	wsi, err := ws.k8sBackend.GetWebserverInformation()
+	if err != nil {
+		return fmt.Errorf("error retrieving webserver information: %v", err)
+	}
+	theUrl.Host = wsi.IpFqdn
+
+	return nil
+}
+
 func (ws *WebserverImpl) ResponseFromIndex(rw http.ResponseWriter, r *http.Request, ct structs.ContentTypes) {
 	relativeFileToBeDelivered, err := ws.index.DeduceRelativeFilePath(r.URL, ct)
 	if err != nil {
@@ -63,9 +78,18 @@ func (ws *WebserverImpl) ResponseFromIndex(rw http.ResponseWriter, r *http.Reque
 	ws.storage.Handle(rw, relativeFileToBeDelivered)
 }
 
+func (ws *WebserverImpl) GetDeviceInformationByName(deviceId string) (*dhcpstructs.DeviceInformation, error) {
+	// Forward the call to the k8sBackend
+	return ws.k8sBackend.GetDeviceInformationByName(deviceId)
+}
+
 // GetWebserverOperations return the webserver operations interface
 func GetWebserverOperations() webserverIf.WebserverOperations {
 	return newWebserver()
+}
+
+func (ws *WebserverImpl) SetKubeConfig(kubeconfig string) {
+	ws.k8sBackend = k8s.NewZtpK8sBackend(kubeconfig)
 }
 
 // GetWebserverSetup return the webserver setup interface
