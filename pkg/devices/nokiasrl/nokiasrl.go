@@ -2,6 +2,7 @@ package nokiasrl
 
 import (
 	"bytes"
+	_ "embed"
 	"fmt"
 	"net/http"
 	"strings"
@@ -18,6 +19,12 @@ const (
 	vendor = "nokia"
 	model  = "srlinux"
 )
+
+//go:embed files/base_config.json.tmpl
+var nokiaScriptTemplate string
+
+//go:embed files/provisioning_01.py.tmpl
+var nokiaConfigTemplate string
 
 var nokiasrl *NokiaSRL
 
@@ -78,8 +85,7 @@ func (srl *NokiaSRL) handleScript(rw http.ResponseWriter, r *http.Request) {
 	wss.EnrichUrl(upConfig)
 
 	// load the srl ztp script template
-	// TODO: fix the template path
-	t, err := template.ParseFiles("./pkg/devices/nokiasrl/files/provisioning_01.py.tmpl")
+	t, err := template.New("script").Parse(nokiaScriptTemplate)
 	if err != nil {
 		utils.HandleErrorCodeLog(http.StatusInternalServerError, err, rw)
 		return
@@ -136,9 +142,7 @@ func (srl *NokiaSRL) handleConfig(rw http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	templateFilename := "base_config.json.tmpl"
-
-	t, err := template.New(templateFilename).Funcs(templateFuncs).ParseFiles("./pkg/devices/nokiasrl/files/" + templateFilename)
+	t, err := template.New("config").Funcs(templateFuncs).Parse(nokiaConfigTemplate)
 	if err != nil {
 		utils.HandleErrorCodeLog(http.StatusInternalServerError, err, rw)
 		return

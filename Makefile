@@ -45,7 +45,6 @@ $(LOCALBIN):
 ## Tool Binaries
 KUBECTL_NDD ?= $(LOCALBIN)/kubectl-ndd
 
-
 .PHONY: kubectl-ndd
 kubectl-ndd: $(KUBECTL_NDD) ## Download kubectl-ndd locally if necessary.
 $(KUBECTL_NDD): $(LOCALBIN)
