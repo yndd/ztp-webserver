@@ -75,6 +75,7 @@ func NewUrlParamsDeviceName(vendor, model string, deviceId string, ct ContentTyp
 	}
 }
 
+// UrlParamsFromUrl takes a given URL and converts it into the URLParams object
 func UrlParamsFromUrl(u *url.URL) (*UrlParams, error) {
 	var result *UrlParams = nil
 

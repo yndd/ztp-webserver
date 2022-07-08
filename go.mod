@@ -4,12 +4,11 @@ go 1.17
 
 require (
 	github.com/davecgh/go-spew v1.1.1
+	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.5.0
-	github.com/yndd/ztp-dhcp v0.0.0-20220707072116-fc68c66f8587
+	github.com/yndd/ztp-dhcp v0.0.0-20220708145608-2b5a4d746134
 )
-
-
 
 require (
 	github.com/emicklei/go-restful/v3 v3.8.0 // indirect
@@ -41,7 +40,7 @@ require (
 	github.com/yndd/topology v0.0.7 // indirect
 	golang.org/x/net v0.0.0-20220706163947-c90051bbdb60 // indirect
 	golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0 // indirect
-	golang.org/x/sys v0.0.0-20220704084225-05e143d24a9e // indirect
+	golang.org/x/sys v0.0.0-20220708085239-5a0f0661e09d // indirect
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect

@@ -28,7 +28,6 @@ func TestUrlParamsGetUrlRelative(t *testing.T) {
 			t.Errorf("geturlrelative expected %s got %s from %s", x.outGetUrlParams, x.in.GetUrlRelative(), spew.Sprint(x.in))
 		}
 	}
-
 }
 
 func TestUrlParamsParseURLParams(t *testing.T) {
@@ -40,7 +39,5 @@ func TestUrlParamsParseURLParams(t *testing.T) {
 		if !z.Equals(x.in) {
 			t.Errorf("error in parsing %s != %s", spew.Sprint(z), spew.Sprint(x.in))
 		}
-
 	}
-
 }

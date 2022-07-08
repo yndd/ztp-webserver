@@ -10,6 +10,7 @@ import (
 	"github.com/yndd/ztp-dhcp/pkg/backend"
 	"github.com/yndd/ztp-dhcp/pkg/backend/k8s"
 	dhcpstructs "github.com/yndd/ztp-dhcp/pkg/structs"
+	"github.com/yndd/ztp-webserver/pkg/deviceregistry"
 	"github.com/yndd/ztp-webserver/pkg/storage"
 	storageIf "github.com/yndd/ztp-webserver/pkg/storage/interfaces"
 	"github.com/yndd/ztp-webserver/pkg/structs"
@@ -35,6 +36,15 @@ func (ws *WebserverImpl) Run(port int, storageFolder string) {
 	if err != nil {
 		log.Fatalf("error loading storage backend: %v", err)
 	}
+
+	// get a pointer to the DeviceRegistry
+	dr := deviceregistry.GetDeviceRegistry()
+
+	// Get all the registered devices
+	for _, x := range dr.GetRegistryDevices() {
+		// inject the WebserverSetupper Interface reference
+		x.SetWebserverSetupper(ws)
+	}
 	//ws.mux.Handle("/storage", http.StripPrefix("/storage", http.FileServer(http.Dir(storageFolder))))
 	log.Infof("starting webserver on port %d", port)
 	http.ListenAndServe("0.0.0.0:"+strconv.Itoa(port), ws.mux)
@@ -55,13 +65,30 @@ func (ws *WebserverImpl) GetIndex() storageIf.Index {
 	return ws.index
 }
 
+// EnrichUrl add the Host portion to the given URL.
+// The information is retrieved from the Kubernetes Service Kind
 func (ws *WebserverImpl) EnrichUrl(theUrl *url.URL) error {
 	wsi, err := ws.k8sBackend.GetWebserverInformation()
 	if err != nil {
 		return fmt.Errorf("error retrieving webserver information: %v", err)
 	}
-	theUrl.Host = wsi.IpFqdn
 
+	theUrl.Scheme = wsi.Protocol
+	port := fmt.Sprintf(":%d", wsi.Port)
+	// if default http / https ports are in use,
+	// strip the port portion from the URL
+	switch wsi.Protocol {
+	case "http":
+		if wsi.Port == 80 {
+			port = ""
+		}
+	case "https":
+		if wsi.Port == 443 {
+			port = ""
+		}
+	}
+
+	theUrl.Host = fmt.Sprintf("%s%s", wsi.IpFqdn, port)
 	return nil
 }
 
@@ -93,7 +120,7 @@ func (ws *WebserverImpl) SetKubeConfig(kubeconfig string) {
 }
 
 // GetWebserverSetup return the webserver setup interface
-func GetWebserverSetup() webserverIf.WebserverSetup {
+func GetWebserverSetup() webserverIf.WebserverSetupper {
 	return newWebserver()
 }
 

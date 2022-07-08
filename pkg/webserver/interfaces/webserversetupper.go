@@ -9,12 +9,7 @@ import (
 	"github.com/yndd/ztp-webserver/pkg/structs"
 )
 
-type WebserverOperations interface {
-	Run(port int, storageFolder string)
-	SetKubeConfig(string)
-}
-
-type WebserverSetup interface {
+type WebserverSetupper interface {
 	AddHandler(*structs.UrlParams, func(http.ResponseWriter, *http.Request))
 	GetStorage() storageif.Storage
 	GetIndex() storageif.Index

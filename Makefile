@@ -53,3 +53,19 @@ $(KUBECTL_NDD): $(LOCALBIN)
 .PHONY: update-yndd-dependencies
 update-yndd-dependencies:
 	go get -d github.com/yndd/ztp-dhcp
+
+
+MOCKDIR = pkg/mocks
+
+.PHONY: gen-mocks
+gen-mocks: ## Generate mocks for all the defined interfaces.
+	go install github.com/golang/mock/mockgen@latest
+	rm -r pkg/mocks/*
+	mockgen -package=mock -source=pkg/devices/devicehandler.go -destination=$(MOCKDIR)/devicehandler.go
+	mockgen -package=mock -source=pkg/deviceregistry/deviceregistry.go -destination=$(MOCKDIR)/deviceregistry.go
+	mockgen -package=mock -source=pkg/storage/interfaces/storage.go -destination=$(MOCKDIR)/storage.go
+	mockgen -package=mock -source=pkg/storage/interfaces/index.go -destination=$(MOCKDIR)/index.go
+	mockgen -package=mock -source=pkg/webserver/interfaces/webserveroperator.go -destination=$(MOCKDIR)/webserveroperator.go
+	mockgen -package=mock -source=pkg/webserver/interfaces/webserversetupper.go -destination=$(MOCKDIR)/webserversetupper.go
+	
+	

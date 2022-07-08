@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/yndd/ztp-webserver/pkg/deviceregistry"
 	"github.com/yndd/ztp-webserver/pkg/structs"
 	"github.com/yndd/ztp-webserver/pkg/utils"
 	"github.com/yndd/ztp-webserver/pkg/webserver"
@@ -16,20 +17,21 @@ import (
 )
 
 const (
-	vendor = "nokia"
-	model  = "srlinux"
+	vendor = "Nokia"
+	model  = "SRLinux"
 )
 
 //go:embed files/base_config.json.tmpl
-var nokiaScriptTemplate string
-
-//go:embed files/provisioning_01.py.tmpl
 var nokiaConfigTemplate string
 
+//go:embed files/provisioning_01.py.tmpl
+var nokiaScriptTemplate string
+
+// nokiasrl stores the singleton instance of the NokiaSRL instance
 var nokiasrl *NokiaSRL
 
 type NokiaSRL struct {
-	webserver webserverIf.WebserverSetup
+	webserver webserverIf.WebserverSetupper
 }
 
 // handleSoftware handles the delivery of the software image to the client
@@ -85,7 +87,7 @@ func (srl *NokiaSRL) handleScript(rw http.ResponseWriter, r *http.Request) {
 	wss.EnrichUrl(upConfig)
 
 	// load the srl ztp script template
-	t, err := template.New("script").Parse(nokiaScriptTemplate)
+	t, err := template.New("script").Funcs(getTemplatingFunctions()).Parse(nokiaScriptTemplate)
 	if err != nil {
 		utils.HandleErrorCodeLog(http.StatusInternalServerError, err, rw)
 		return
@@ -131,18 +133,7 @@ func (srl *NokiaSRL) handleConfig(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var templateFuncs = template.FuncMap{
-		"join": strings.Join,
-		"jsonstringify": func(sarr []string) []string {
-			result := []string{}
-			for _, s := range sarr {
-				result = append(result, fmt.Sprintf("\"%s\"", s))
-			}
-			return result
-		},
-	}
-
-	t, err := template.New("config").Funcs(templateFuncs).Parse(nokiaConfigTemplate)
+	t, err := template.New("config").Funcs(getTemplatingFunctions()).Parse(nokiaConfigTemplate)
 	if err != nil {
 		utils.HandleErrorCodeLog(http.StatusInternalServerError, err, rw)
 		return
@@ -183,28 +174,52 @@ func (srl *NokiaSRL) handleConfig(rw http.ResponseWriter, r *http.Request) {
 
 }
 
+// SetWebserverSetupper used to inject the dependency of the WebserverSetupper
+func (srl *NokiaSRL) SetWebserverSetupper(webserver webserverIf.WebserverSetupper) {
+	srl.webserver = webserver
+
+	upSoftware := structs.NewUrlParams(vendor, model, structs.Software)
+	webserver.AddHandler(upSoftware, srl.handleSoftware)
+
+	upScript := structs.NewUrlParams(vendor, model, structs.Script)
+	webserver.AddHandler(upScript, srl.handleScript)
+
+	upConfig := structs.NewUrlParams(vendor, model, structs.Config)
+	webserver.AddHandler(upConfig, srl.handleConfig)
+
+	upmd5hash := structs.NewUrlParams(vendor, model, structs.Md5HashFile)
+	webserver.AddHandler(upmd5hash, srl.handleMd5HashFile)
+}
+
+// getTemplatingFunctions returns the function map used in multiple templating
+// instances, e.g. Config and Script
+func getTemplatingFunctions() template.FuncMap {
+	var templateFuncs = template.FuncMap{
+		"join": strings.Join,
+		"jsonstringify": func(sarr []string) []string {
+			result := []string{}
+			for _, s := range sarr {
+				result = append(result, fmt.Sprintf("\"%s\"", s))
+			}
+			return result
+		},
+	}
+	return templateFuncs
+}
+
 // NewNokiaSRL konstructor for the NokiaSRL device endpoint
-func NewNokiaSRL(w webserverIf.WebserverSetup) *NokiaSRL {
+func NewNokiaSRL() *NokiaSRL {
 	if nokiasrl == nil {
-		nokiasrl = &NokiaSRL{webserver: w}
+		nokiasrl = &NokiaSRL{}
 	}
 	return nokiasrl
 }
 
 func init() {
-	// register the endpoints this Device model supports in the webserver
-	wsSetup := webserver.GetWebserverSetup()
-	nsrl := NewNokiaSRL(wsSetup)
-
-	upSoftware := structs.NewUrlParams(vendor, model, structs.Software)
-	wsSetup.AddHandler(upSoftware, nsrl.handleSoftware)
-
-	upScript := structs.NewUrlParams(vendor, model, structs.Script)
-	wsSetup.AddHandler(upScript, nsrl.handleScript)
-
-	upConfig := structs.NewUrlParams(vendor, model, structs.Config)
-	wsSetup.AddHandler(upConfig, nsrl.handleConfig)
-
-	upmd5hash := structs.NewUrlParams(vendor, model, structs.Md5HashFile)
-	wsSetup.AddHandler(upmd5hash, nsrl.handleMd5HashFile)
+	// create a new NokiaSRL instance
+	newsrl := NewNokiaSRL()
+	// acquire the handle on the deviceregistry
+	dr := deviceregistry.GetDeviceRegistry()
+	// register the device with the registry
+	dr.RegisterDevice(newsrl)
 }
