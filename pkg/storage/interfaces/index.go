@@ -1,12 +1,11 @@
 package interfaces
 
 import (
+	"io/fs"
 	"net/url"
-
-	"github.com/yndd/ztp-webserver/pkg/structs"
 )
 
 type Index interface {
-	DeduceRelativeFilePath(*url.URL, structs.ContentTypes) (string, error)
-	LoadBackend(base string) error
+	DeduceRelativeFilePath(*url.URL) (string, error)
+	LoadBackend(fs.FS) error
 }

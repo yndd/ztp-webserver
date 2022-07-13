@@ -1,10 +1,11 @@
 package interfaces
 
 import (
+	"io/fs"
 	"net/http"
 )
 
 type Storage interface {
 	Handle(w http.ResponseWriter, filePath string)
-	LoadBackend(base string) error
+	LoadBackend(fs.FS) error
 }

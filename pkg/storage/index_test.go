@@ -7,15 +7,13 @@ import (
 )
 
 func TestIndexStruct(t *testing.T) {
-
 	i := NewIndex()
-
-	nokiaSrlv001 := i.AddVendor("nokia").AddPlattform("srlinux").AddVersion("v0.0.1")
-	nokiaSrlv001.SetFile("nokia/srlinux/v0.0.1_version.txt")
-	nokiaSrlv001.SetMd5HashFile("nokia/srlinux/v0.0.1_version_hash.txt")
-	nokiaSrlv101 := i.AddVendor("nokia").AddPlattform("srlinux").AddVersion("v1.0.1")
-	nokiaSrlv101.SetFile("nokia/srlinux/v1.0.1_version.txt")
-	nokiaSrlv101.SetMd5HashFile("nokia/srlinux/v1.0.1_version_hash.txt")
+	NokiaSrlv001 := i.AddVendor("Nokia").AddPlattform("SRLinux").AddVersion("v0.0.1")
+	NokiaSrlv001.SetFile("Nokia/SRLinux/v0.0.1_version.txt")
+	NokiaSrlv001.SetMd5HashFile("Nokia/SRLinux/v0.0.1_version_hash.txt")
+	NokiaSrlv101 := i.AddVendor("Nokia").AddPlattform("SRLinux").AddVersion("v1.0.1")
+	NokiaSrlv101.SetFile("Nokia/SRLinux/v1.0.1_version.txt")
+	NokiaSrlv101.SetMd5HashFile("Nokia/SRLinux/v1.0.1_version_hash.txt")
 	dummydummyv001 := i.AddVendor("dummy").AddPlattform("dummy").AddVersion("v0.0.1")
 	dummydummyv001.SetFile("dummy/dummy/v0.0.1_version.txt")
 	dummydummyv001.SetMd5HashFile("dummy/dummy/v0.0.1_version_hash.txt")
@@ -26,5 +24,9 @@ func TestIndexStruct(t *testing.T) {
 	}
 
 	fmt.Println(string(data))
+
+}
+
+func TestDeduceRelativeFilePath(t *testing.T) {
 
 }

@@ -22,7 +22,7 @@ help: ## Display this help.
 
 
 docker-build: update-yndd-dependencies ## Build docker image with the manager.
-	docker build -t $(IMAGE_TAG_BASE) .
+	DOCKER_BUILDKIT=1 docker build -t $(IMAGE_TAG_BASE) .
 
 docker-push: docker-build ## Push docker image with the manager.
 	docker push $(IMAGE_TAG_BASE)
@@ -60,12 +60,15 @@ MOCKDIR = pkg/mocks
 .PHONY: gen-mocks
 gen-mocks: ## Generate mocks for all the defined interfaces.
 	go install github.com/golang/mock/mockgen@latest
-	rm -r pkg/mocks/*
-	mockgen -package=mock -source=pkg/devices/devicehandler.go -destination=$(MOCKDIR)/devicehandler.go
-	mockgen -package=mock -source=pkg/deviceregistry/deviceregistry.go -destination=$(MOCKDIR)/deviceregistry.go
-	mockgen -package=mock -source=pkg/storage/interfaces/storage.go -destination=$(MOCKDIR)/storage.go
-	mockgen -package=mock -source=pkg/storage/interfaces/index.go -destination=$(MOCKDIR)/index.go
-	mockgen -package=mock -source=pkg/webserver/interfaces/webserveroperator.go -destination=$(MOCKDIR)/webserveroperator.go
-	mockgen -package=mock -source=pkg/webserver/interfaces/webserversetupper.go -destination=$(MOCKDIR)/webserversetupper.go
+	rm -rf pkg/mocks/*
+	mockgen -package=mocks -source=pkg/deviceregistry/interfaces/registrydevice.go -destination=$(MOCKDIR)/registrydevice.go
+	mockgen -package=mocks -source=pkg/storage/interfaces/storage.go -destination=$(MOCKDIR)/storage.go
+	mockgen -package=mocks -source=pkg/storage/interfaces/index.go -destination=$(MOCKDIR)/index.go
+	mockgen -package=mocks -source=pkg/webserver/interfaces/webserveroperator.go -destination=$(MOCKDIR)/webserveroperator.go
+	mockgen -package=mocks -source=pkg/webserver/interfaces/webserversetupper.go -destination=$(MOCKDIR)/webserversetupper.go
 	
-	
+.PHONY: test
+test: ## Run test with coverage
+	go test -v -coverprofile coverage.out ./... -coverpkg=./...
+	grep -v '/mocks/' coverage.out > coverage.tmp && mv coverage.tmp coverage.out
+	go tool cover -html coverage.out -o coverage.html

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/yndd/ztp-dhcp/pkg/backend"
-	"github.com/yndd/ztp-dhcp/pkg/backend/k8s"
 	dhcpstructs "github.com/yndd/ztp-dhcp/pkg/structs"
 	"github.com/yndd/ztp-webserver/pkg/deviceregistry"
 	"github.com/yndd/ztp-webserver/pkg/storage"
@@ -28,11 +28,13 @@ type WebserverImpl struct {
 
 func (ws *WebserverImpl) Run(port int, storageFolder string) {
 
-	err := ws.index.LoadBackend(storageFolder)
+	storageFs := os.DirFS(storageFolder)
+
+	err := ws.index.LoadBackend(storageFs)
 	if err != nil {
 		log.Fatalf("error loading index backend: %v", err)
 	}
-	err = ws.storage.LoadBackend(storageFolder)
+	err = ws.storage.LoadBackend(storageFs)
 	if err != nil {
 		log.Fatalf("error loading storage backend: %v", err)
 	}
@@ -87,13 +89,14 @@ func (ws *WebserverImpl) EnrichUrl(theUrl *url.URL) error {
 			port = ""
 		}
 	}
-
+	// there is no specific port field, the port also goes into the
+	// host portion of the url seperated via a colon (:)
 	theUrl.Host = fmt.Sprintf("%s%s", wsi.IpFqdn, port)
 	return nil
 }
 
-func (ws *WebserverImpl) ResponseFromIndex(rw http.ResponseWriter, r *http.Request, ct structs.ContentTypes) {
-	relativeFileToBeDelivered, err := ws.index.DeduceRelativeFilePath(r.URL, ct)
+func (ws *WebserverImpl) ResponseFromIndex(rw http.ResponseWriter, r *http.Request) {
+	relativeFileToBeDelivered, err := ws.index.DeduceRelativeFilePath(r.URL)
 	if err != nil {
 		log.Errorf("error deducing relative file path: %v", err)
 		status := http.StatusBadRequest
@@ -115,8 +118,8 @@ func GetWebserverOperations() webserverIf.WebserverOperations {
 	return newWebserver()
 }
 
-func (ws *WebserverImpl) SetKubeConfig(kubeconfig string) {
-	ws.k8sBackend = k8s.NewZtpK8sBackend(kubeconfig)
+func (ws *WebserverImpl) SetBackend(backend backend.ZtpBackend) {
+	ws.k8sBackend = backend
 }
 
 // GetWebserverSetup return the webserver setup interface

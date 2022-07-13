@@ -34,20 +34,6 @@ type NokiaSRL struct {
 	webserver webserverIf.WebserverSetupper
 }
 
-// handleSoftware handles the delivery of the software image to the client
-func (srl *NokiaSRL) handleSoftware(rw http.ResponseWriter, r *http.Request) {
-	log.Debugf("handling call on %s", r.URL)
-	// deliver the file registered in the index
-	srl.webserver.ResponseFromIndex(rw, r, structs.Software)
-}
-
-// handleMd5HashFile handles the delivery of md5hash files to the client
-func (srl *NokiaSRL) handleMd5HashFile(rw http.ResponseWriter, r *http.Request) {
-	log.Debugf("handling call on %s", r.URL)
-	// deliver the file registered in the index
-	srl.webserver.ResponseFromIndex(rw, r, structs.Md5HashFile)
-}
-
 // handleScript handles the generation of node specific ztp configuration scripts
 func (srl *NokiaSRL) handleScript(rw http.ResponseWriter, r *http.Request) {
 	log.Debugf("handling call on %s", r.URL)
@@ -179,7 +165,12 @@ func (srl *NokiaSRL) SetWebserverSetupper(webserver webserverIf.WebserverSetuppe
 	srl.webserver = webserver
 
 	upSoftware := structs.NewUrlParams(vendor, model, structs.Software)
-	webserver.AddHandler(upSoftware, srl.handleSoftware)
+	// delegate software retrieval to the webserver to respond straight from index
+	webserver.AddHandler(upSoftware, srl.webserver.ResponseFromIndex)
+
+	upmd5hash := structs.NewUrlParams(vendor, model, structs.Md5HashFile)
+	// delegate md5hash retrieval to the webserver to respond straight from index
+	webserver.AddHandler(upmd5hash, srl.webserver.ResponseFromIndex)
 
 	upScript := structs.NewUrlParams(vendor, model, structs.Script)
 	webserver.AddHandler(upScript, srl.handleScript)
@@ -187,28 +178,20 @@ func (srl *NokiaSRL) SetWebserverSetupper(webserver webserverIf.WebserverSetuppe
 	upConfig := structs.NewUrlParams(vendor, model, structs.Config)
 	webserver.AddHandler(upConfig, srl.handleConfig)
 
-	upmd5hash := structs.NewUrlParams(vendor, model, structs.Md5HashFile)
-	webserver.AddHandler(upmd5hash, srl.handleMd5HashFile)
 }
 
 // getTemplatingFunctions returns the function map used in multiple templating
 // instances, e.g. Config and Script
 func getTemplatingFunctions() template.FuncMap {
 	var templateFuncs = template.FuncMap{
-		"join": strings.Join,
-		"jsonstringify": func(sarr []string) []string {
-			result := []string{}
-			for _, s := range sarr {
-				result = append(result, fmt.Sprintf("\"%s\"", s))
-			}
-			return result
-		},
+		"join":          strings.Join,
+		"jsonstringify": jsonStringifyArray,
 	}
 	return templateFuncs
 }
 
-// NewNokiaSRL konstructor for the NokiaSRL device endpoint
-func NewNokiaSRL() *NokiaSRL {
+// GetNokiaSRL konstructor for the NokiaSRL device endpoint
+func GetNokiaSRL() *NokiaSRL {
 	if nokiasrl == nil {
 		nokiasrl = &NokiaSRL{}
 	}
@@ -217,9 +200,19 @@ func NewNokiaSRL() *NokiaSRL {
 
 func init() {
 	// create a new NokiaSRL instance
-	newsrl := NewNokiaSRL()
+	newsrl := GetNokiaSRL()
 	// acquire the handle on the deviceregistry
 	dr := deviceregistry.GetDeviceRegistry()
 	// register the device with the registry
 	dr.RegisterDevice(newsrl)
+}
+
+// jsonStringifyArray function used in golang templating
+// this adds Quotationmarks to the strings in the array
+func jsonStringifyArray(sarr []string) []string {
+	result := []string{}
+	for _, s := range sarr {
+		result = append(result, fmt.Sprintf("\"%s\"", s))
+	}
+	return result
 }
