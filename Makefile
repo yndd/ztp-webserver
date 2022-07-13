@@ -57,16 +57,19 @@ update-yndd-dependencies:
 
 MOCKDIR = pkg/mocks
 
-.PHONY: gen-mocks
-gen-mocks: ## Generate mocks for all the defined interfaces.
+.PHONY: mocks-gen
+mocks-gen: mocks-rm ## Generate mocks for all the defined interfaces.
 	go install github.com/golang/mock/mockgen@latest
-	rm -rf pkg/mocks/*
 	mockgen -package=mocks -source=pkg/deviceregistry/interfaces/registrydevice.go -destination=$(MOCKDIR)/registrydevice.go
 	mockgen -package=mocks -source=pkg/storage/interfaces/storage.go -destination=$(MOCKDIR)/storage.go
 	mockgen -package=mocks -source=pkg/storage/interfaces/index.go -destination=$(MOCKDIR)/index.go
 	mockgen -package=mocks -source=pkg/webserver/interfaces/webserveroperator.go -destination=$(MOCKDIR)/webserveroperator.go
 	mockgen -package=mocks -source=pkg/webserver/interfaces/webserversetupper.go -destination=$(MOCKDIR)/webserversetupper.go
-	
+
+.PHONY: mocks-rm
+mocks-rm: ## remove generated mocks
+	rm -rf $(MOCKDIR)/*
+
 .PHONY: test
 test: ## Run test with coverage
 	go test -v -coverprofile coverage.out ./... -coverpkg=./...

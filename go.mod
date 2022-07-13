@@ -7,7 +7,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.5.0
-	github.com/yndd/ztp-dhcp v0.0.0-20220708145608-2b5a4d746134
+	github.com/yndd/ztp-dhcp v0.0.0-20220713072442-17324ce65e46
 )
 
 //replace github.com/yndd/ztp-dhcp => ../ztp-dhcp

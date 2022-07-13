@@ -2014,6 +2014,8 @@ github.com/yndd/topology v0.0.7/go.mod h1:l1j7fa6TfOqV8YzsgDy2WDRTn5p8SHxXb6+qRO
 github.com/yndd/ygotsrl v0.0.2/go.mod h1:nk7Gk6N/+Q5DZXh+926wqdCB0TdCkc6FAOfZGZwXvvQ=
 github.com/yndd/ztp-dhcp v0.0.0-20220708145608-2b5a4d746134 h1:F6qcV+GvGCUc6/sL2Q3TW5FYVhNrcfwiRwjFCnUNP5I=
 github.com/yndd/ztp-dhcp v0.0.0-20220708145608-2b5a4d746134/go.mod h1:CRr/gmsIdo2VEK7pjHV6MZfySJ3x5pMzWphpEgkGLJE=
+github.com/yndd/ztp-dhcp v0.0.0-20220713072442-17324ce65e46 h1:MtkeWriNChfV1aa0Ui7DG6LV8Lf3UFDBhAK0jKKQNVA=
+github.com/yndd/ztp-dhcp v0.0.0-20220713072442-17324ce65e46/go.mod h1:z+ScFLYB6fL6ggM8qrsyzpmaVcoGtuWQy5l0DOhNc38=
 github.com/yndd/ztp-webserver v0.0.0-20220707072021-69882090a099/go.mod h1:4b+FdPZAOKooI3QaJPKxdHpFZTbhxF5splsuPw3p04Y=
 github.com/yudai/gojsondiff v1.0.0/go.mod h1:AY32+k2cwILAkW1fbgxQ5mUmMiZFgLIV+FBNExI05xg=
 github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82/go.mod h1:lgjkn3NuSvDfVJdfcVVdX+jpBxNmX4rDAzaS45IcYoM=
