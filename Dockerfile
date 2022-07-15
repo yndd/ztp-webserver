@@ -3,8 +3,9 @@
 FROM golang:1.17 as builder
 WORKDIR /workspace
 COPY . .
-RUN --mount=type=cache,id=ztp-webserver-golang-cache,target=/root/.cache/go-build,sharing=locked CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o ztp-webserver main.go
-
+RUN --mount=type=cache,id=ztp-webserver-golang-dl-cache,target=/go/pkg/mod \
+    --mount=type=cache,id=ztp-webserver-golang-build-cache,target=/root/.cache/go-build \
+       CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o ztp-webserver main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details

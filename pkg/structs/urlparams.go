@@ -40,7 +40,6 @@ func (u *UrlParams) GetUrlRelative() *url.URL {
 
 	newUrl := &url.URL{}
 	newUrl.Path = fmt.Sprintf("%s/%s/%s", url.PathEscape(u.vendor), url.PathEscape(u.model), url.PathEscape(ContentType2String(u.contentType)))
-	newUrl.Scheme = "http"
 
 	q := newUrl.Query()
 	// add version parameter if set

@@ -14,17 +14,16 @@ var testdata = []struct {
 	outGetUrlParams string
 }{{
 	in:              NewUrlParams("Nokia", "SRLinux", Config).SetDeviceId("MyDevice43"),
-	outGetUrlParams: fmt.Sprintf("http://%s/Nokia/SRLinux/config?deviceid=MyDevice43", fakeserver),
+	outGetUrlParams: "Nokia/SRLinux/config?deviceid=MyDevice43",
 }, {
 	in:              NewUrlParams("Nokia", "SRLinux", Config).SetDeviceId("MyOtherDevice").SetVersion("v8.7.6"),
-	outGetUrlParams: fmt.Sprintf("http://%s/Nokia/SRLinux/config?deviceid=MyOtherDevice&version=v8.7.6", fakeserver),
+	outGetUrlParams: "Nokia/SRLinux/config?deviceid=MyOtherDevice&version=v8.7.6",
 },
 }
 
 func TestUrlParamsGetUrlRelative(t *testing.T) {
 	for _, x := range testdata {
 		relativeUrl := x.in.GetUrlRelative()
-		relativeUrl.Host = fakeserver
 		if relativeUrl.String() != x.outGetUrlParams {
 			t.Errorf("geturlrelative expected %s got %s from %s", x.outGetUrlParams, x.in.GetUrlRelative(), spew.Sprint(x.in))
 		}
