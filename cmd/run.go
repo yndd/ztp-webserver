@@ -20,7 +20,7 @@ var (
 // runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
-	Short: "Execute the ZTP DHCP-Server",
+	Short: "Execute the ZTP Web-Server",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws := webserver.GetWebserverOperations()

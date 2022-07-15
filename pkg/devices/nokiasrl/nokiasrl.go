@@ -96,6 +96,7 @@ func (srl *NokiaSRL) handleScript(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// finally send the data to the client
+	rw.Header().Add("content-disposition", "attachment; filename=provision.py")
 	_, err = rw.Write(specificScript.Bytes())
 	if err != nil {
 		utils.HandleErrorCodeLog(http.StatusInternalServerError, err, rw)
