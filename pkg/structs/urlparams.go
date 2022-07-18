@@ -14,6 +14,7 @@ type UrlParams struct {
 	// but is necessary for software downloads
 	version    string
 	devicename string
+	filename   string
 }
 
 // Equals check value equality of two UrlParam structs
@@ -22,7 +23,8 @@ func (u *UrlParams) Equals(x *UrlParams) bool {
 		u.vendor == x.vendor &&
 		u.model == x.model &&
 		u.version == x.version &&
-		u.contentType == x.contentType
+		u.contentType == x.contentType &&
+		u.filename == x.filename
 }
 
 func (u *UrlParams) SetDeviceId(s string) *UrlParams {
@@ -35,11 +37,19 @@ func (u *UrlParams) SetVersion(v string) *UrlParams {
 	return u
 }
 
+func (u *UrlParams) SetFilename(fn string) *UrlParams {
+	u.filename = fn
+	return u
+}
+
 // GetUrlRelative retrieve the url string from the UrlParams struct
 func (u *UrlParams) GetUrlRelative() *url.URL {
 
 	newUrl := &url.URL{}
 	newUrl.Path = fmt.Sprintf("%s/%s/%s", url.PathEscape(u.vendor), url.PathEscape(u.model), url.PathEscape(ContentType2String(u.contentType)))
+	if u.filename != "" {
+		newUrl.Path = fmt.Sprintf("%s/%s", newUrl.Path, u.filename)
+	}
 
 	q := newUrl.Query()
 	// add version parameter if set
@@ -84,8 +94,9 @@ func UrlParamsFromUrl(u *url.URL) (*UrlParams, error) {
 	}
 
 	splitPath := strings.Split(path, "/")
-	if len(splitPath) != 3 {
-		return nil, fmt.Errorf("malformed url %s. expected 3 element path", u.String())
+	length := len(splitPath)
+	if length < 3 || length > 4 {
+		return nil, fmt.Errorf("malformed url %s. expected 3 to 4 element path", u.String())
 	}
 	contentType, err := String2ContentTypes(splitPath[2])
 	if err != nil {
@@ -101,12 +112,14 @@ func UrlParamsFromUrl(u *url.URL) (*UrlParams, error) {
 	if val, exists := u.Query()["deviceid"]; exists {
 		result.devicename = val[0]
 	}
+	if length >= 4 {
+		result.filename = splitPath[3]
+	}
 	return result, err
 }
 
 // ParseURL parse the given url and return the corresponding UrlParams struct
 func ParseURL(url_str string) (*UrlParams, error) {
-
 	var err error = nil
 
 	u, err := url.Parse(url_str)
@@ -139,4 +152,9 @@ func (u *UrlParams) GetVersion() string {
 // GetDeviceName getter for the deviceId attribute
 func (u *UrlParams) GetDeviceName() string {
 	return u.devicename
+}
+
+// GetFilename getter for the deviceId attribute
+func (u *UrlParams) GetFilename() string {
+	return u.filename
 }

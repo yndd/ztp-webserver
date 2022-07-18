@@ -56,7 +56,7 @@ func (ws *WebserverImpl) AddHandler(up *structs.UrlParams, handler func(http.Res
 	pattern := up.GetUrlRelative()
 	path := "/" + pattern.Path
 	log.Infof("handler added for pattern %s", path)
-	ws.mux.HandleFunc(path, handler)
+	ws.mux.HandleFunc(path+"/", handler)
 }
 
 func (ws *WebserverImpl) GetStorage() storageIf.Storage {

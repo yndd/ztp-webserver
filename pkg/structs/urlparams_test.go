@@ -18,6 +18,9 @@ var testdata = []struct {
 }, {
 	in:              NewUrlParams("Nokia", "SRLinux", Config).SetDeviceId("MyOtherDevice").SetVersion("v8.7.6"),
 	outGetUrlParams: "Nokia/SRLinux/config?deviceid=MyOtherDevice&version=v8.7.6",
+}, {
+	in:              NewUrlParams("Nokia", "SRLinux", Config).SetDeviceId("MyOtherDevice").SetVersion("v8.7.6").SetFilename("myfile.py"),
+	outGetUrlParams: "Nokia/SRLinux/config/myfile.py?deviceid=MyOtherDevice&version=v8.7.6",
 },
 }
 
@@ -72,7 +75,7 @@ func TestNewUrlParamsDeviceName(t *testing.T) {
 func TestUrlParamsFromUrlErrors(t *testing.T) {
 
 	// test for too many path elements
-	u, _ := url.Parse(fmt.Sprintf("http://%s/Nokia/SRLinux/config/foo?deviceid=MyOtherDevice&version=v8.7.6", fakeserver))
+	u, _ := url.Parse(fmt.Sprintf("http://%s/Nokia/SRLinux/config/foo/bla?deviceid=MyOtherDevice&version=v8.7.6", fakeserver))
 
 	_, err := UrlParamsFromUrl(u)
 	if err == nil {

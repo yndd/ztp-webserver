@@ -1,13 +1,13 @@
 module github.com/yndd/ztp-webserver
 
-go 1.17
+go 1.18
 
 require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.5.0
-	github.com/yndd/ztp-dhcp v0.0.0-20220713072442-17324ce65e46
+	github.com/yndd/ztp-dhcp v0.0.0-20220718090540-49458055250c
 )
 
 //replace github.com/yndd/ztp-dhcp => ../ztp-dhcp
@@ -43,7 +43,7 @@ require (
 	github.com/yndd/topology v0.0.7 // indirect
 	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
 	golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0 // indirect
-	golang.org/x/sys v0.0.0-20220712014510-0a85c31ab51e // indirect
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
@@ -52,14 +52,14 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.24.2 // indirect
-	k8s.io/apimachinery v0.24.2 // indirect
-	k8s.io/client-go v0.24.2 // indirect
+	k8s.io/api v0.24.3 // indirect
+	k8s.io/apimachinery v0.24.3 // indirect
+	k8s.io/client-go v0.24.3 // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220627174259-011e075b9cb8 // indirect
-	k8s.io/utils v0.0.0-20220706174534-f6158b442e7c // indirect
+	k8s.io/utils v0.0.0-20220713171938-56c0de1e6f5e // indirect
 	sigs.k8s.io/controller-runtime v0.12.3 // indirect
-	sigs.k8s.io/json v0.0.0-20220525155127-227cbc7cc124 // indirect
+	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
