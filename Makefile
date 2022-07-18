@@ -52,7 +52,7 @@ $(KUBECTL_NDD): $(LOCALBIN)
 
 .PHONY: update-yndd-dependencies
 update-yndd-dependencies:
-	go get -d github.com/yndd/ztp-dhcp@master
+	go get -u -d github.com/yndd/ztp-dhcp@master
 
 
 MOCKDIR = pkg/mocks

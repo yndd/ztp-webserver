@@ -62,9 +62,9 @@ func (srl *NokiaSRL) handleScript(rw http.ResponseWriter, r *http.Request) {
 	// generate URL for the software image file
 	upSoftware := structs.NewUrlParamsDeviceName(vendor, model, deviceId, structs.Software).SetVersion(nodeInformation.ExpectedSWVersion).SetFilename("srlinux.bin").GetUrlRelative()
 	// generate URL for the md5 hash file
-	upHash := structs.NewUrlParamsDeviceName(vendor, model, deviceId, structs.Md5HashFile).SetVersion(nodeInformation.ExpectedSWVersion).SetFilename("script.py").GetUrlRelative()
+	upHash := structs.NewUrlParamsDeviceName(vendor, model, deviceId, structs.Md5HashFile).SetVersion(nodeInformation.ExpectedSWVersion).SetFilename("hash.md5").GetUrlRelative()
 	// generate URL for the node configuration
-	upConfig := structs.NewUrlParamsDeviceName(vendor, model, deviceId, structs.Config).SetFilename("srlinux.md5").GetUrlRelative()
+	upConfig := structs.NewUrlParamsDeviceName(vendor, model, deviceId, structs.Config).SetFilename("srlinux.json").GetUrlRelative()
 
 	// add hostname/ip, port and schema to url
 	wss := webserver.GetWebserverSetup()
