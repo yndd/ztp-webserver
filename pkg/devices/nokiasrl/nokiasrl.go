@@ -152,8 +152,8 @@ func (srl *NokiaSRL) handleConfig(rw http.ResponseWriter, r *http.Request) {
 	}{
 		Cidr:       nodeInformation.CIDR,
 		GatewayIp:  nodeInformation.Gateway,
-		DnsServers: []string{"1.1.1.1", "5.5.5.5", "1.1.1.2", "5.5.5.6"},
-		NtpServers: []string{"1.1.1.2", "5.5.5.6", "1.1.1.2", "5.5.5.6"},
+		DnsServers: []string{"1.1.1.1", "8.8.8.8", "1.1.1.2"},
+		NtpServers: []string{"1.1.1.2", "5.5.5.6", "1.1.1.2"},
 	})
 	if err != nil {
 		utils.HandleErrorCodeLog(http.StatusInternalServerError, err, rw)
