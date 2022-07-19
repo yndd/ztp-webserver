@@ -14,13 +14,13 @@ var testdata = []struct {
 	outGetUrlParams string
 }{{
 	in:              NewUrlParams("Nokia", "SRLinux", Config).SetDeviceId("MyDevice43"),
-	outGetUrlParams: "Nokia/SRLinux/config?deviceid=MyDevice43",
+	outGetUrlParams: "Nokia/SRLinux/config/deviceid=MyDevice43",
 }, {
 	in:              NewUrlParams("Nokia", "SRLinux", Config).SetDeviceId("MyOtherDevice").SetVersion("v8.7.6"),
-	outGetUrlParams: "Nokia/SRLinux/config?deviceid=MyOtherDevice&version=v8.7.6",
+	outGetUrlParams: "Nokia/SRLinux/config/version=v8.7.6/deviceid=MyOtherDevice",
 }, {
 	in:              NewUrlParams("Nokia", "SRLinux", Config).SetDeviceId("MyOtherDevice").SetVersion("v8.7.6").SetFilename("myfile.py"),
-	outGetUrlParams: "Nokia/SRLinux/config/myfile.py?deviceid=MyOtherDevice&version=v8.7.6",
+	outGetUrlParams: "Nokia/SRLinux/config/version=v8.7.6/deviceid=MyOtherDevice/myfile.py",
 },
 }
 
@@ -74,18 +74,10 @@ func TestNewUrlParamsDeviceName(t *testing.T) {
 
 func TestUrlParamsFromUrlErrors(t *testing.T) {
 
-	// test for too many path elements
-	u, _ := url.Parse(fmt.Sprintf("http://%s/Nokia/SRLinux/config/foo/bla?deviceid=MyOtherDevice&version=v8.7.6", fakeserver))
+	// test for wrong content type path elment
+	u, _ := url.Parse(fmt.Sprintf("http://%s/Nokia/SRLinux/blabla/deviceid=MyOtherDevice/version=v8.7.6", fakeserver))
 
 	_, err := UrlParamsFromUrl(u)
-	if err == nil {
-		t.Errorf("Expected error to be thrown since too many path elements are present in url %s. ", u.String())
-	}
-
-	// test for wrong content type path elment
-	u, _ = url.Parse(fmt.Sprintf("http://%s/Nokia/SRLinux/blabla?deviceid=MyOtherDevice&version=v8.7.6", fakeserver))
-
-	_, err = UrlParamsFromUrl(u)
 	if err == nil {
 		t.Errorf("Expected error to be thrown since content type is not a registered type in url %s. ", u.String())
 	}

@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+const (
+	versionPrefix  = "version"
+	deviceIdPrefix = "deviceid"
+)
+
 type UrlParams struct {
 	vendor      string
 	model       string
@@ -47,20 +52,19 @@ func (u *UrlParams) GetUrlRelative() *url.URL {
 
 	newUrl := &url.URL{}
 	newUrl.Path = fmt.Sprintf("%s/%s/%s", url.PathEscape(u.vendor), url.PathEscape(u.model), url.PathEscape(ContentType2String(u.contentType)))
-	if u.filename != "" {
-		newUrl.Path = fmt.Sprintf("%s/%s", newUrl.Path, u.filename)
-	}
 
-	q := newUrl.Query()
 	// add version parameter if set
 	if u.version != "" {
-		q.Set("version", u.version)
+		newUrl.Path = fmt.Sprintf("%s/%s", newUrl.Path, url.PathEscape(fmt.Sprintf("%s=%s", versionPrefix, u.version)))
 	}
 	// add version parameter if set
 	if u.devicename != "" {
-		q.Set("deviceid", u.devicename)
+		newUrl.Path = fmt.Sprintf("%s/%s", newUrl.Path, url.PathEscape(fmt.Sprintf("%s=%s", deviceIdPrefix, u.devicename)))
 	}
-	newUrl.RawQuery = q.Encode()
+
+	if u.filename != "" {
+		newUrl.Path = fmt.Sprintf("%s/%s", newUrl.Path, url.PathEscape(u.filename))
+	}
 
 	return newUrl
 }
@@ -94,26 +98,25 @@ func UrlParamsFromUrl(u *url.URL) (*UrlParams, error) {
 	}
 
 	splitPath := strings.Split(path, "/")
-	length := len(splitPath)
-	if length < 3 || length > 4 {
-		return nil, fmt.Errorf("malformed url %s. expected 3 to 4 element path", u.String())
-	}
 	contentType, err := String2ContentTypes(splitPath[2])
 	if err != nil {
 		return nil, fmt.Errorf("error converting %s to content type(%w)", splitPath[2], err)
 	}
 
 	result = NewUrlParams(splitPath[0], splitPath[1], *contentType)
-	// parse version
-	if val, exists := u.Query()["version"]; exists {
-		result.version = val[0]
+
+	for _, x := range splitPath {
+		lowerX := strings.ToLower(x)
+		switch {
+		case strings.HasPrefix(lowerX, versionPrefix+"="):
+			result.version = x[len(versionPrefix)+1:]
+		case strings.HasPrefix(lowerX, deviceIdPrefix+"="):
+			result.devicename = x[len(deviceIdPrefix)+1:]
+		}
 	}
-	// parse device ID
-	if val, exists := u.Query()["deviceid"]; exists {
-		result.devicename = val[0]
-	}
-	if length >= 4 {
-		result.filename = splitPath[3]
+
+	if !strings.Contains(splitPath[len(splitPath)-1], "=") {
+		result.filename = splitPath[len(splitPath)-1]
 	}
 	return result, err
 }
