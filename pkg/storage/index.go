@@ -12,13 +12,11 @@ import (
 
 const indexfilename = "index.json"
 
-type Vendors map[string]structs.Platforms
-
 type Index struct {
-	Vendors      Vendors   `json:"vendors"`
-	filesystem   fs.FS     `json:"-"`
-	indexModTime time.Time `json:"-"`
-	indexSize    int64     `json:"-"`
+	Vendors      structs.Vendors `json:"vendors"`
+	filesystem   fs.FS           `json:"-"`
+	indexModTime time.Time       `json:"-"`
+	indexSize    int64           `json:"-"`
 }
 
 func (i *Index) DeduceRelativeFilePath(urlPath *url.URL) (*structs.FileEntry, error) {
@@ -72,7 +70,7 @@ func (i *Index) GetVendor(vendor string) structs.Platforms {
 }
 
 func NewIndex() *Index {
-	return &Index{Vendors: Vendors{}}
+	return &Index{Vendors: structs.Vendors{}}
 }
 
 func (i *Index) LoadBackend(filesystem fs.FS) error {

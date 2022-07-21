@@ -21,3 +21,11 @@ func NewFileEntry(rt FileReferenceType, ref string) *FileEntry {
 		Reference:     ref,
 	}
 }
+
+func (fe *FileEntry) GetReference() string {
+	return fe.Reference
+}
+
+func (fe *FileEntry) GetReferenceType() FileReferenceType {
+	return fe.ReferenceType
+}

@@ -123,8 +123,8 @@ func TestLoadBackendReloadIndex(t *testing.T) {
 					   "ref":"nokia/sros/22.5.R2/both.tim"
 					},
 					"support.tim":{
-					   "type":"filesystem",
-					   "ref":"nokia/sros/22.5.R2/support.tim"
+					   "type":"httpredirect",
+					   "ref":"http://127.0.0.1/myfolder/somefile.data"
 					},
 					"iom.tim":{
 					   "type":"filesystem",
@@ -155,11 +155,39 @@ func TestLoadBackendReloadIndex(t *testing.T) {
 		t.Error(err)
 	}
 
-	data, err := json.MarshalIndent(i.Vendors, "", "  ")
-	if err != nil {
-		t.Error(err)
+	expectedRef := "nokia/sros/22.5.R2/both.tim"
+	sampleEntry1 := i.GetVendor("Nokia").GetPlatform("SROS").GetVersion("22.5.R2").GetFile(structs.BothTim)
+	actualRef := sampleEntry1.GetReference()
+	actualRefType := sampleEntry1.GetReferenceType()
+
+	if actualRef != expectedRef {
+		t.Errorf("expected reference to be '%s' but got '%s", expectedRef, actualRef)
 	}
 
-	fmt.Println(string(data))
+	if actualRefType != structs.Filesystem {
+		t.Errorf("expected reference to be '%s' but got '%s", string(expectedRef), string(actualRef))
+	}
+
+	// second check
+
+	expectedRef = "http://127.0.0.1/myfolder/somefile.data"
+	sampleEntry1 = i.GetVendor("Nokia").GetPlatform("SROS").GetVersion("22.5.R2").GetFile(structs.SupportTim)
+	actualRef = sampleEntry1.GetReference()
+	actualRefType = sampleEntry1.GetReferenceType()
+
+	if actualRef != expectedRef {
+		t.Errorf("expected reference to be '%s' but got '%s", expectedRef, actualRef)
+	}
+
+	if actualRefType != structs.HTTPRedirect {
+		t.Errorf("expected reference to be '%s' but got '%s", string(expectedRef), string(actualRef))
+	}
+
+	// // print the test data
+	// data, err := json.MarshalIndent(i.Vendors, "", "  ")
+	// if err != nil {
+	// 	t.Error(err)
+	// }
+	// fmt.Print(data)
 
 }

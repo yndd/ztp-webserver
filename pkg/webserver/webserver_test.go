@@ -2,6 +2,7 @@ package webserver
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
@@ -9,6 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 	dhcp_mocks "github.com/yndd/ztp-dhcp/pkg/mocks"
 	dhcp_structs "github.com/yndd/ztp-dhcp/pkg/structs"
+	"github.com/yndd/ztp-webserver/pkg/mocks"
 	"github.com/yndd/ztp-webserver/pkg/structs"
 )
 
@@ -117,4 +119,94 @@ func TestAddHandler(t *testing.T) {
 	if pattern == "" {
 		t.Errorf("Should match the pattern registered")
 	}
+}
+
+func TestResponseFromIndexRedirect(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	referenceLink := "http://myserver/myfolder/target.file"
+
+	// construct Request URL
+	reqUrl := structs.NewUrlParams("Dummy", "Dummy", structs.Software).SetVersion("v1.0.0").SetFilename("myfunnyfile").GetUrlRelative()
+	reqUrl.Host = "127.0.0.1"
+	reqUrl.Scheme = "http"
+
+	// construct http Request
+	req := httptest.NewRequest("GET", reqUrl.String(), nil)
+
+	// setup the index mock
+	indexMock := mocks.NewMockIndex(mockCtrl)
+	indexMock.EXPECT().DeduceRelativeFilePath(gomock.Any()).Return(&structs.FileEntry{
+		ReferenceType: structs.HTTPRedirect,
+		Reference:     referenceLink,
+	}, nil)
+
+	// init a response recorder
+	recorder := httptest.NewRecorder()
+
+	// init the webserver instance
+	ws := &WebserverImpl{
+		index: indexMock,
+	}
+
+	// call the method under test
+	ws.ResponseFromIndex(recorder, req)
+
+	// get result
+	httpresult := recorder.Result()
+	// check status code
+	statuscode := httpresult.StatusCode
+	if recorder.Result().StatusCode != 301 {
+		t.Errorf("expected status code 301, got %d", statuscode)
+	}
+	// check Location header
+	if val, exists := httpresult.Header["Location"]; !exists {
+		t.Errorf("no Location header present.")
+		if val[0] != referenceLink {
+			t.Errorf("redirect was expected to point to '%s' but pointed to '%s'", referenceLink, val[0])
+		}
+	}
+}
+
+func TestResponseFromIndexFilesystem(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	filename := "folder/file.data"
+
+	// construct Request URL
+	reqUrl := structs.NewUrlParams("Dummy", "Dummy", structs.Software).SetVersion("v1.0.0").SetFilename("myfunnyfile").GetUrlRelative()
+	reqUrl.Host = "127.0.0.1"
+	reqUrl.Scheme = "http"
+
+	// construct http Request
+	req := httptest.NewRequest("GET", reqUrl.String(), nil)
+
+	// init a response recorder
+	recorder := httptest.NewRecorder()
+
+	// setup the index mock
+	indexMock := mocks.NewMockIndex(mockCtrl)
+	indexMock.EXPECT().DeduceRelativeFilePath(gomock.Any()).Return(&structs.FileEntry{
+		ReferenceType: structs.Filesystem,
+		Reference:     filename,
+	}, nil)
+
+	storageMock := mocks.NewMockStorage(mockCtrl)
+	storageMock.EXPECT().Handle(recorder, filename)
+
+	// init the webserver instance
+	ws := &WebserverImpl{
+		index:   indexMock,
+		storage: storageMock,
+	}
+
+	// call the method under test
+	ws.ResponseFromIndex(recorder, req)
+
+	// no need to check the recorder, since the storage is also mocked
+	// and we defined, that Handle() on the must have been called
 }

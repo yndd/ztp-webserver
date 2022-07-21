@@ -10,6 +10,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	structs "github.com/yndd/ztp-webserver/pkg/structs"
 )
 
 // MockIndex is a mock of Index interface.
@@ -36,10 +37,10 @@ func (m *MockIndex) EXPECT() *MockIndexMockRecorder {
 }
 
 // DeduceRelativeFilePath mocks base method.
-func (m *MockIndex) DeduceRelativeFilePath(arg0 *url.URL) (string, error) {
+func (m *MockIndex) DeduceRelativeFilePath(arg0 *url.URL) (*structs.FileEntry, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeduceRelativeFilePath", arg0)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(*structs.FileEntry)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

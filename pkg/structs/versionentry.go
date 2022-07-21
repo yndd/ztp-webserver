@@ -19,3 +19,10 @@ func (ve *VersionEntry) SetFile(ct ContentTypes, fe *FileEntry) error {
 	ve.Files[ct] = fe
 	return nil
 }
+
+func (ve *VersionEntry) GetFile(ct ContentTypes) *FileEntry {
+	if ve.Files[ct] == nil {
+		return nil
+	}
+	return ve.Files[ct]
+}
