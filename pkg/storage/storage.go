@@ -26,7 +26,7 @@ func (fs *FolderStorageImpl) LoadBackend(filesys iofs.FS) error {
 func (fs *FolderStorageImpl) Handle(w http.ResponseWriter, filePath string) {
 
 	// read the file and deliver it finally
-	data, err := iofs.ReadFile(fs.filesystem, filePath)
+	data, err := fs.GetFileContent(filePath)
 	if err != nil {
 		// show error page if failed to read file
 		utils.HandleErrorCodeLog(500, fmt.Errorf("unable to retrieve file: %v", err), w)
@@ -38,4 +38,9 @@ func (fs *FolderStorageImpl) Handle(w http.ResponseWriter, filePath string) {
 		}
 		log.Infof("%s delivered successfully", filePath)
 	}
+}
+
+//GetFileContent retrieve the data from the given file
+func (fs *FolderStorageImpl) GetFileContent(filePath string) ([]byte, error) {
+	return iofs.ReadFile(fs.filesystem, filePath)
 }

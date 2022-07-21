@@ -10,32 +10,21 @@ import (
 	"github.com/yndd/ztp-webserver/pkg/structs"
 )
 
-const indexfilename = "index.yaml"
+const indexfilename = "index.json"
+
+type Vendors map[string]structs.Platforms
 
 type Index struct {
-	Vendors      map[string]*VendorEntry `json:"vendors"`
-	filesystem   fs.FS                   `json:"-"`
-	indexModTime time.Time               `json:"-"`
-	indexSize    int64                   `json:"-"`
+	Vendors      Vendors   `json:"vendors"`
+	filesystem   fs.FS     `json:"-"`
+	indexModTime time.Time `json:"-"`
+	indexSize    int64     `json:"-"`
 }
 
-type VendorEntry struct {
-	Platforms map[string]*PlatformEntry `json:"platforms"`
-}
-
-type PlatformEntry struct {
-	Versions map[string]*VersionEntry `json:"versions"`
-}
-
-type VersionEntry struct {
-	File        string `json:"file"`
-	Md5HashFile string `json:"md5HashFile,omitempty"`
-}
-
-func (i *Index) DeduceRelativeFilePath(urlPath *url.URL) (string, error) {
+func (i *Index) DeduceRelativeFilePath(urlPath *url.URL) (*structs.FileEntry, error) {
 	purl, err := structs.UrlParamsFromUrl(urlPath)
 	if err != nil {
-		return "", fmt.Errorf("error parsing url %s - %v", urlPath, err)
+		return nil, fmt.Errorf("error parsing url %s - %v", urlPath, err)
 	}
 
 	// reload index maybe index changed meanwhile
@@ -43,39 +32,38 @@ func (i *Index) DeduceRelativeFilePath(urlPath *url.URL) (string, error) {
 
 	vendor := i.GetVendor(purl.GetVendor())
 	if vendor == nil {
-		return "", fmt.Errorf("vendor '%s' not found in index", purl.GetVendor())
+		return nil, fmt.Errorf("vendor '%s' not found in index", purl.GetVendor())
 	}
-	plattform := vendor.GetPlattform(purl.GetModel())
+	plattform := vendor.GetPlatform(purl.GetModel())
 	if plattform == nil {
-		return "", fmt.Errorf("plattform '%s' not found under vendor '%s' in index", purl.GetModel(), purl.GetVendor())
+		return nil, fmt.Errorf("plattform '%s' not found under vendor '%s' in index", purl.GetModel(), purl.GetVendor())
 	}
 	version := plattform.GetVersion(purl.GetVersion())
 	if version == nil {
-		return "", fmt.Errorf("version '%s' not found under vendor '%s', plattform '%s' in index", purl.GetVersion(), purl.GetModel(), purl.GetVendor())
+		return nil, fmt.Errorf("version '%s' not found under vendor '%s', plattform '%s' in index", purl.GetVersion(), purl.GetModel(), purl.GetVendor())
 	}
 
-	switch purl.GetContentType() {
-	case structs.Software:
-		return version.File, nil
-	case structs.Md5HashFile:
-		return version.Md5HashFile, nil
+	if filepath, exists := version.Files[purl.GetContentType()]; exists {
+		return filepath, nil
 	}
 
-	return "", fmt.Errorf("content not found in index")
+	return nil, fmt.Errorf("content not found in index")
 }
 
-func (i *Index) AddVendor(vendor string) *VendorEntry {
+// AddVendor adds a new vendor to the index if it does not exists
+// otherwise return the existing Platforms reference
+func (i *Index) AddVendor(vendor string) structs.Platforms {
 	// check if vendor already exists
 	if ve, exists := i.Vendors[vendor]; exists {
 		return ve
 	}
 	// create a new entry and return it
-	newve := &VendorEntry{Platforms: map[string]*PlatformEntry{}}
-	i.Vendors[vendor] = newve
-	return newve
+	newp := structs.Platforms{}
+	i.Vendors[vendor] = newp
+	return newp
 }
 
-func (i *Index) GetVendor(vendor string) *VendorEntry {
+func (i *Index) GetVendor(vendor string) structs.Platforms {
 	// return the vendor entry
 	if val, exists := i.Vendors[vendor]; exists {
 		return val
@@ -83,64 +71,8 @@ func (i *Index) GetVendor(vendor string) *VendorEntry {
 	return nil
 }
 
-func (ve *VendorEntry) AddPlattform(plattform string) *PlatformEntry {
-	// check if plattform already exists
-	if ve, exists := ve.Platforms[plattform]; exists {
-		return ve
-	}
-	// create a new entry and return it
-	newpf := &PlatformEntry{Versions: map[string]*VersionEntry{}}
-	ve.Platforms[plattform] = newpf
-	return newpf
-}
-
-func (ve *VendorEntry) GetPlattform(plattform string) *PlatformEntry {
-	// return the plattform entry
-	if val, exists := ve.Platforms[plattform]; exists {
-		return val
-	}
-	return nil
-}
-
-func (pe *PlatformEntry) AddVersion(version string) *VersionEntry {
-	// check if version already exists
-	if ve, exists := pe.Versions[version]; exists {
-		return ve
-	}
-	// create a new entry and return it
-	newv := &VersionEntry{}
-	pe.Versions[version] = newv
-	return newv
-}
-
-func (pe *PlatformEntry) GetVersion(version string) *VersionEntry {
-	// return the plattform entry
-	if val, exists := pe.Versions[version]; exists {
-		return val
-	}
-	return nil
-}
-
-func (ve *VersionEntry) SetFile(file string) error {
-	if ve.File != "" {
-		return fmt.Errorf("file %s is already referenced ignoring %s", ve.File, file)
-	}
-	ve.File = file
-
-	return nil
-}
-
-func (ve *VersionEntry) SetMd5HashFile(file string) error {
-	if ve.Md5HashFile != "" {
-		return fmt.Errorf("md5 hash file %s is already referenced ignoring %s", ve.Md5HashFile, file)
-	}
-	ve.Md5HashFile = file
-
-	return nil
-}
-
 func NewIndex() *Index {
-	return &Index{Vendors: map[string]*VendorEntry{}}
+	return &Index{Vendors: Vendors{}}
 }
 
 func (i *Index) LoadBackend(filesystem fs.FS) error {
@@ -169,9 +101,10 @@ func (i *Index) reloadIndex() error {
 		return fmt.Errorf("error reading index file: %s", err)
 	}
 	// unmarshal it from json
-	err = json.Unmarshal(dat, i)
+	err = json.Unmarshal(dat, &i.Vendors)
 	if err != nil {
 		return fmt.Errorf("error unmarshalling index file: %v", err)
 	}
+
 	return nil
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/yndd/ztp-webserver/pkg/storage"
 	storageIf "github.com/yndd/ztp-webserver/pkg/storage/interfaces"
 	"github.com/yndd/ztp-webserver/pkg/structs"
+	"github.com/yndd/ztp-webserver/pkg/utils"
 	webserverIf "github.com/yndd/ztp-webserver/pkg/webserver/interfaces"
 )
 
@@ -96,16 +97,19 @@ func (ws *WebserverImpl) EnrichUrl(theUrl *url.URL) error {
 }
 
 func (ws *WebserverImpl) ResponseFromIndex(rw http.ResponseWriter, r *http.Request) {
-	relativeFileToBeDelivered, err := ws.index.DeduceRelativeFilePath(r.URL)
+	fileEntry, err := ws.index.DeduceRelativeFilePath(r.URL)
 	if err != nil {
-		log.Errorf("error deducing relative file path: %v", err)
-		status := http.StatusBadRequest
-		rw.WriteHeader(status)
-		rw.Write([]byte(fmt.Sprintf("%d - %v", status, err)))
+		utils.HandleErrorCodeLog(404, err, rw)
+	}
+	switch fileEntry.ReferenceType {
+	case structs.Filesystem:
+		// handle local strorage delivery
+		ws.storage.Handle(rw, fileEntry.Reference)
+	case structs.HTTPRedirect:
+		// Handle redirects
+		http.Redirect(rw, r, fileEntry.Reference, http.StatusMovedPermanently)
 		return
 	}
-
-	ws.storage.Handle(rw, relativeFileToBeDelivered)
 }
 
 func (ws *WebserverImpl) GetDeviceInformationByName(deviceId string) (*dhcpstructs.DeviceInformation, error) {

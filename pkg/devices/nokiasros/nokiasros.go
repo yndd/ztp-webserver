@@ -1,4 +1,4 @@
-package nokiasrl
+package nokiasros
 
 import (
 	"bytes"
@@ -18,24 +18,24 @@ import (
 
 const (
 	vendor = "Nokia"
-	model  = "SRLinux"
+	model  = "SROS"
 )
 
-//go:embed files/base_config.json.tmpl
+//go:embed files/config.cfg.tmpl
 var nokiaConfigTemplate string
 
-//go:embed files/provisioning_01.py.tmpl
-var nokiaScriptTemplate string
+//go:embed files/provision.txt.tmpl
+var nokiaProvisionTemplate string
 
-// nokiasrl stores the singleton instance of the NokiaSRL instance
-var nokiasrl *NokiaSRL
+// nokiasros stores the singleton instance of the NokiaSROS instance
+var nokiasros *NokiaSROS
 
-type NokiaSRL struct {
+type NokiaSROS struct {
 	webserver webserverIf.WebserverSetupper
 }
 
 // handleScript handles the generation of node specific ztp configuration scripts
-func (srl *NokiaSRL) handleScript(rw http.ResponseWriter, r *http.Request) {
+func (sros *NokiaSROS) handleScript(rw http.ResponseWriter, r *http.Request) {
 	log.Debugf("handling call on %s", r.URL)
 
 	// parse URL parameter to figure out the Node Name (node identifier)
@@ -53,7 +53,7 @@ func (srl *NokiaSRL) handleScript(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	// retrieve the Topology node data from k8s
-	nodeInformation, err := srl.webserver.GetDeviceInformationByName(deviceId)
+	nodeInformation, err := sros.webserver.GetDeviceInformationByName(deviceId)
 	if err != nil {
 		utils.HandleErrorCodeLog(http.StatusInternalServerError, err, rw)
 		return
@@ -66,7 +66,7 @@ func (srl *NokiaSRL) handleScript(rw http.ResponseWriter, r *http.Request) {
 	// generate URL for the md5 hash file
 	upHash := structs.NewUrlParamsDeviceName(vendor, model, deviceId, structs.Md5HashFile).SetVersion(nodeInformation.ExpectedSWVersion).SetFilename(softwareFilename + ".md5").GetUrlRelative()
 	// generate URL for the node configuration
-	upConfig := structs.NewUrlParamsDeviceName(vendor, model, deviceId, structs.Config).SetFilename("config.json").GetUrlRelative()
+	upConfig := structs.NewUrlParamsDeviceName(vendor, model, deviceId, structs.Config).SetFilename("device.cfg").GetUrlRelative()
 
 	// add hostname/ip, port and schema to url
 	wss := webserver.GetWebserverSetup()
@@ -74,8 +74,8 @@ func (srl *NokiaSRL) handleScript(rw http.ResponseWriter, r *http.Request) {
 	wss.EnrichUrl(upHash)
 	wss.EnrichUrl(upConfig)
 
-	// load the srl ztp script template
-	t, err := template.New("script").Funcs(getTemplatingFunctions()).Parse(nokiaScriptTemplate)
+	// load the provisioning ztp script template
+	t, err := template.New("script").Funcs(getTemplatingFunctions()).Parse(nokiaProvisionTemplate)
 	if err != nil {
 		utils.HandleErrorCodeLog(http.StatusInternalServerError, err, rw)
 		return
@@ -85,25 +85,16 @@ func (srl *NokiaSRL) handleScript(rw http.ResponseWriter, r *http.Request) {
 
 	// generate the node specific script from the tempalte
 	err = t.Execute(specificScript, struct {
-		ImageUrl  string
-		Md5Url    string
-		ConfigUrl string
-	}{
-		ImageUrl:  upSoftware.String(),
-		Md5Url:    upHash.String(),
-		ConfigUrl: upConfig.String(),
-	})
+		CpmTimUrl     string
+		IomTimUrl     string
+		KernelTimUrl  string
+		SupportTimUrl string
+		BothTimUrl    string
+	}{})
 	if err != nil {
 		utils.HandleErrorCodeLog(http.StatusInternalServerError, err, rw)
 		return
 	}
-
-	// // Add content-disposition header
-	// filename := reqParams.GetFilename()
-	// if filename != "" {
-	// 	filename = "provision.py"
-	// }
-	// rw.Header().Add("content-disposition", fmt.Sprintf("attachment; filename=%s", filename))
 
 	// finally send the data to the client
 	_, err = rw.Write(specificScript.Bytes())
@@ -114,7 +105,7 @@ func (srl *NokiaSRL) handleScript(rw http.ResponseWriter, r *http.Request) {
 }
 
 // handleConfig handles the generation of base srl configs
-func (srl *NokiaSRL) handleConfig(rw http.ResponseWriter, r *http.Request) {
+func (sros *NokiaSROS) handleConfig(rw http.ResponseWriter, r *http.Request) {
 	log.Debugf("handling call on %s", r.URL)
 
 	reqParams, err := structs.UrlParamsFromUrl(r.URL)
@@ -138,7 +129,7 @@ func (srl *NokiaSRL) handleConfig(rw http.ResponseWriter, r *http.Request) {
 	// init buffer for the template result
 	var specificConfig = &bytes.Buffer{}
 
-	nodeInformation, err := srl.webserver.GetDeviceInformationByName(reqParams.GetDeviceName())
+	nodeInformation, err := sros.webserver.GetDeviceInformationByName(reqParams.GetDeviceName())
 	if err != nil {
 		utils.HandleErrorCodeLog(http.StatusInternalServerError, err, rw)
 		return
@@ -171,22 +162,22 @@ func (srl *NokiaSRL) handleConfig(rw http.ResponseWriter, r *http.Request) {
 }
 
 // SetWebserverSetupper used to inject the dependency of the WebserverSetupper
-func (srl *NokiaSRL) SetWebserverSetupper(webserver webserverIf.WebserverSetupper) {
-	srl.webserver = webserver
+func (sros *NokiaSROS) SetWebserverSetupper(webserver webserverIf.WebserverSetupper) {
+	sros.webserver = webserver
 
 	upSoftware := structs.NewUrlParams(vendor, model, structs.Software)
 	// delegate software retrieval to the webserver to respond straight from index
-	webserver.AddHandler(upSoftware, srl.webserver.ResponseFromIndex)
+	webserver.AddHandler(upSoftware, sros.webserver.ResponseFromIndex)
 
 	upmd5hash := structs.NewUrlParams(vendor, model, structs.Md5HashFile)
 	// delegate md5hash retrieval to the webserver to respond straight from index
-	webserver.AddHandler(upmd5hash, srl.webserver.ResponseFromIndex)
+	webserver.AddHandler(upmd5hash, sros.webserver.ResponseFromIndex)
 
 	upScript := structs.NewUrlParams(vendor, model, structs.Script)
-	webserver.AddHandler(upScript, srl.handleScript)
+	webserver.AddHandler(upScript, sros.handleScript)
 
 	upConfig := structs.NewUrlParams(vendor, model, structs.Config)
-	webserver.AddHandler(upConfig, srl.handleConfig)
+	webserver.AddHandler(upConfig, sros.handleConfig)
 
 }
 
@@ -201,16 +192,16 @@ func getTemplatingFunctions() template.FuncMap {
 }
 
 // GetNokiaSRL konstructor for the NokiaSRL device endpoint
-func GetNokiaSRL() *NokiaSRL {
-	if nokiasrl == nil {
-		nokiasrl = &NokiaSRL{}
+func GetNokiaSROS() *NokiaSROS {
+	if nokiasros == nil {
+		nokiasros = &NokiaSROS{}
 	}
-	return nokiasrl
+	return nokiasros
 }
 
 func init() {
 	// create a new NokiaSRL instance
-	newsrl := GetNokiaSRL()
+	newsrl := GetNokiaSROS()
 	// acquire the handle on the deviceregistry
 	dr := deviceregistry.GetDeviceRegistry()
 	// register the device with the registry

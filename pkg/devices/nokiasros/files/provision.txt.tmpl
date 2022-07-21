@@ -1,0 +1,30 @@
+dns {
+    primary 192.0.2.1
+    secondary 192.0.2.2
+    tertiary 192.0.2.3
+}
+download {
+  image "cf3:/both.tim" {
+    primary-url "http://192.168.40.140:81/both.tim"
+  }
+  image "cf3:/support.tim" {
+    primary-url "http://192.168.40.140:81/support.tim"
+  }
+  config "cf3:/config.cfg" {
+    primary-url "ftp://ftpserv:name@192.168.194.50/./images/dut-a.cfg"
+  }
+  file "cf3:/license.txt" {
+    primary-url "ftp://ftpserv:name@192.168.194.50/./images/provision_example.cfg"
+  }
+}
+bof {
+  primary-image cf3:/both.tim
+  primary-config cf3:/config.tim
+  address 192.168.100.1 active
+  autonegotiate
+  duplex full
+  speed 100
+  wait 3
+  persist off
+  console-speed 115200
+}

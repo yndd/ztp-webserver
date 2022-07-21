@@ -1764,6 +1764,8 @@ github.com/sirupsen/logrus v1.6.0/go.mod h1:7uNnSEd1DgxDLC74fIahvMZmmYsHGZGEOFrf
 github.com/sirupsen/logrus v1.7.0/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE=
 github.com/sirupsen/logrus v1.8.1/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
+github.com/sirupsen/logrus v1.9.0 h1:trlNQbNUG3OdDrDil03MCb1H2o9nJ1x4/5LYw7byDE0=
+github.com/sirupsen/logrus v1.9.0/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/sivchari/tenv v1.4.7/go.mod h1:5nF+bITvkebQVanjU6IuMbvIot/7ReNsUV7I5NbprB0=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d/go.mod h1:OnSkiWE9lh6wB0YB77sQom3nweQdgAjqCqsofrRNTgc=
 github.com/smartystreets/assertions v1.0.0/go.mod h1:kHHU4qYBaI3q23Pp3VPrmWhuIUrLW/7eUrw0BU5VaoM=
@@ -2018,6 +2020,8 @@ github.com/yndd/ztp-dhcp v0.0.0-20220715162947-99967f7eb2a3 h1:qzt0vCaxjPoqsr6gP
 github.com/yndd/ztp-dhcp v0.0.0-20220715162947-99967f7eb2a3/go.mod h1:d+gOupGluClzZfj0CK+lqqNzsgN3EC+o6cDwwBUNZ9w=
 github.com/yndd/ztp-dhcp v0.0.0-20220718090540-49458055250c h1:vx3yw05u5MN5YwcyiW4Reia8i2VVetUQs4AuJf/c8Q0=
 github.com/yndd/ztp-dhcp v0.0.0-20220718090540-49458055250c/go.mod h1:d+gOupGluClzZfj0CK+lqqNzsgN3EC+o6cDwwBUNZ9w=
+github.com/yndd/ztp-dhcp v0.0.0-20220718125323-4770beb9788e h1:MPBZ0tmXhoZraD5vbGj/NG3Fhfb+7P4RoD56GsmQQk4=
+github.com/yndd/ztp-dhcp v0.0.0-20220718125323-4770beb9788e/go.mod h1:HdZrZ5UU2wT9dpUH5ewxIWTIswqhF95gugvhtX2UYZc=
 github.com/yndd/ztp-webserver v0.0.0-20220707072021-69882090a099/go.mod h1:4b+FdPZAOKooI3QaJPKxdHpFZTbhxF5splsuPw3p04Y=
 github.com/yndd/ztp-webserver v0.0.0-20220708150254-1fd1615ed678/go.mod h1:ICD20QLsgq+xOJBENohgnN/my0dSJrLr7WRxCknm11c=
 github.com/yndd/ztp-webserver v0.0.0-20220715121633-e0270a1ca65b/go.mod h1:ltkwipbjQhQeMRApKWC4wm79MUMIJZzRqd0Ar3SzEbY=
@@ -2334,6 +2338,8 @@ golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401/go.mod h1:DAh4E804XQdzx2j
 golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb/go.mod h1:jaDAt6Dkxork7LmZnYtzbRWj0W47D86a3TGe0YHBvmE=
 golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0 h1:VnGaRqoLmqZH/3TMLJwYCEWkR4j1nuIU1U9TvbqsDUw=
 golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0/go.mod h1:h4gKUeWbJ4rQPri7E0u6Gs4e9Ri2zaLxzw5DI5XGrYg=
+golang.org/x/oauth2 v0.0.0-20220718184931-c8730f7fcb92 h1:oVlhw3Oe+1reYsE2Nqu19PDJfLzwdU3QUUrG86rLK68=
+golang.org/x/oauth2 v0.0.0-20220718184931-c8730f7fcb92/go.mod h1:h4gKUeWbJ4rQPri7E0u6Gs4e9Ri2zaLxzw5DI5XGrYg=
 golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20181108010431-42b317875d0f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
