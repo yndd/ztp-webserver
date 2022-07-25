@@ -27,7 +27,7 @@ var runCmd = &cobra.Command{
 		// # to utilize K8s apiserver use
 		// backend := k8s.NewZtpK8sBackend(kubeconfig)
 		// # or, to use static backend, use
-		// backend := static.NewZtpStaticBackend()
+		// backend := static.NewZtpStaticBackend(os.DirFS("/"))
 		backend := k8s.NewZtpK8sBackend(kubeconfig)
 		ws.SetBackend(backend)
 		// execute
